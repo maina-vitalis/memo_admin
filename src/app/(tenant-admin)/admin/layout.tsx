@@ -11,7 +11,10 @@ import {
   UsersIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { logout } from "@/features/auth/store/auth-slice";
+import { useAppDispatch } from "@/store/hooks";
+import { TenantAdminAuthGuard } from "@/features/auth/components/tenant-admin-auth-guard";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -42,9 +45,7 @@ const navItems = [
   { label: "Memos", href: "/admin/memos", icon: MailIcon },
 ] as const;
 
-const authItems = [
-  { label: "Sign out", href: "/login", icon: LogOutIcon },
-] as const;
+const authItems = [{ label: "Sign out", icon: LogOutIcon }] as const;
 
 function isNavActive(pathname: string, href: string) {
   if (href === "/admin") {
@@ -60,8 +61,16 @@ export default function TenantAdminLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  function handleSignOut() {
+    dispatch(logout());
+    router.push("/login");
+  }
 
   return (
+    <TenantAdminAuthGuard>
     <TooltipProvider>
       <SidebarProvider
         style={
@@ -122,16 +131,15 @@ export default function TenantAdminLayout({
                 const Icon = item.icon;
 
                 return (
-                  <SidebarMenuItem key={item.href}>
+                  <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton
-                      asChild
+                      type="button"
                       tooltip={item.label}
+                      onClick={handleSignOut}
                       className="h-11 rounded-none text-sidebar-foreground/70 hover:bg-primary-container/50 hover:text-sidebar-foreground"
                     >
-                      <Link href={item.href}>
-                        <Icon />
-                        <span>{item.label}</span>
-                      </Link>
+                      <Icon />
+                      <span>{item.label}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
@@ -172,5 +180,6 @@ export default function TenantAdminLayout({
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
+    </TenantAdminAuthGuard>
   );
 }

@@ -1,11 +1,18 @@
 import type { TenantFilters } from "@/features/super-admin/dashboard/schemas/tenant-filters.schema";
 import type { Tenant, TenantsResponse } from "@/features/super-admin/dashboard/types/tenant";
+import {
+  superAdminApi,
+  withMockDelay,
+} from "@/features/super-admin/shared/api/client";
+import { superAdminConfig } from "@/features/super-admin/shared/config";
+import type { InstitutionRecord } from "@/features/super-admin/shared/types/institution";
+import { mapInstitutionToTenant } from "@/features/super-admin/shared/utils/map-institution";
 
 const MOCK_TENANTS: Tenant[] = [
   {
     id: "kabete",
     name: "Kabete National Polytechnic",
-    subdomain: "kabete.nostalqic.com",
+    subdomain: "kabete",
     shortcode: "KNP",
     status: "active",
     seatsActive: 450,
@@ -17,7 +24,7 @@ const MOCK_TENANTS: Tenant[] = [
   {
     id: "eldoret",
     name: "Eldoret National Polytechnic",
-    subdomain: "eldoret.nostalqic.com",
+    subdomain: "eldoret",
     shortcode: "TENP",
     status: "pending",
     seatsActive: 0,
@@ -29,7 +36,7 @@ const MOCK_TENANTS: Tenant[] = [
   {
     id: "nyeri",
     name: "Nyeri National Polytechnic",
-    subdomain: "nyeri.nostalqic.com",
+    subdomain: "nyeri",
     shortcode: "NNP",
     status: "suspended",
     seatsActive: 250,
@@ -41,7 +48,7 @@ const MOCK_TENANTS: Tenant[] = [
   {
     id: "kisumu",
     name: "Kisumu National Polytechnic",
-    subdomain: "kisumu.nostalqic.com",
+    subdomain: "kisumu",
     shortcode: "TKNP",
     status: "trial",
     seatsActive: 45,
@@ -55,7 +62,7 @@ const MOCK_TENANTS: Tenant[] = [
     return {
       id,
       name: `TVET Institute ${index + 5}`,
-      subdomain: `${id}.nostalqic.com`,
+      subdomain: id,
       shortcode: `T${index + 5}`,
       status: "active" as const,
       seatsActive: 120 + index,
@@ -78,12 +85,8 @@ function matchesSearch(tenant: Tenant, search: string) {
   );
 }
 
-export async function fetchTenants(
-  filters: TenantFilters,
-): Promise<TenantsResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-
-  const filtered = MOCK_TENANTS.filter((tenant) => {
+function paginateTenants(tenants: Tenant[], filters: TenantFilters): TenantsResponse {
+  const filtered = tenants.filter((tenant) => {
     const statusMatch =
       filters.status === "all" || tenant.status === filters.status;
     return statusMatch && matchesSearch(tenant, filters.search);
@@ -98,4 +101,30 @@ export async function fetchTenants(
     page: filters.page,
     pageSize: filters.pageSize,
   };
+}
+
+async function fetchTenantsMock(filters: TenantFilters): Promise<TenantsResponse> {
+  await withMockDelay(null);
+  return paginateTenants(MOCK_TENANTS, filters);
+}
+
+async function fetchTenantsFromApi(
+  filters: TenantFilters,
+): Promise<TenantsResponse> {
+  const institutions = await superAdminApi<InstitutionRecord[]>(
+    "/superadmin/institutions",
+  );
+
+  const tenants = institutions.map(mapInstitutionToTenant);
+  return paginateTenants(tenants, filters);
+}
+
+export async function fetchTenants(
+  filters: TenantFilters,
+): Promise<TenantsResponse> {
+  if (superAdminConfig.useMock) {
+    return fetchTenantsMock(filters);
+  }
+
+  return fetchTenantsFromApi(filters);
 }

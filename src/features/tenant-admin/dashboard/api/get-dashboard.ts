@@ -10,7 +10,7 @@ const MOCK_DASHBOARD: DashboardSummary = {
     id: "kabete",
     name: "Kabete National Polytechnic",
     shortcode: "KNP",
-    subdomain: "kabete.nostalqic.com",
+    subdomain: "kabete",
   },
   kpis: [
     {

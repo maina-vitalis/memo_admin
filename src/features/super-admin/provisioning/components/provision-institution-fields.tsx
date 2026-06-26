@@ -8,13 +8,11 @@ import { Input } from "@/components/ui/input";
 type ProvisionInstitutionFieldsProps = {
   register: UseFormRegister<ProvisionTenantFormValues>;
   errors: FieldErrors<ProvisionTenantFormValues>;
-  subdomainPreview: string;
 };
 
 export function ProvisionInstitutionFields({
   register,
   errors,
-  subdomainPreview,
 }: ProvisionInstitutionFieldsProps) {
   return (
     <div className="grid gap-6 sm:grid-cols-2">
@@ -48,14 +46,14 @@ export function ProvisionInstitutionFields({
       </FormField>
 
       <FormField
-        label="Subdomain slug"
-        description={`Will resolve to ${subdomainPreview}`}
+        label="Subdomain"
+        description="Saved exactly as entered. Institution admins use this value when signing in."
         error={errors.subdomainSlug}
         htmlFor="subdomainSlug"
       >
         <Input
           id="subdomainSlug"
-          placeholder="e.g. kabete"
+          placeholder="e.g. eldoret-polytechnic"
           aria-invalid={!!errors.subdomainSlug}
           {...register("subdomainSlug")}
         />

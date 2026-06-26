@@ -52,32 +52,11 @@ export function ProvisionTenantForm() {
     defaultValues: defaultProvisionTenantValues,
   });
 
-  const subdomainSlug = watch("subdomainSlug");
   const initialStatus = watch("initialStatus");
-  const institutionName = watch("institutionName");
-
-  const subdomainPreview = subdomainSlug
-    ? `${subdomainSlug.toLowerCase()}.nostalqic.com`
-    : "your-slug.nostalqic.com";
 
   useEffect(() => {
     setValue("subscriptionDays", STATUS_DEFAULT_DAYS[initialStatus]);
   }, [initialStatus, setValue]);
-
-  useEffect(() => {
-    if (!institutionName || subdomainSlug) return;
-
-    const generatedSlug = institutionName
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 40);
-
-    if (generatedSlug) {
-      setValue("subdomainSlug", generatedSlug, { shouldDirty: true });
-    }
-  }, [institutionName, subdomainSlug, setValue]);
 
   async function onSubmit(values: ProvisionTenantFormValues) {
     try {
@@ -90,7 +69,9 @@ export function ProvisionTenantForm() {
       router.push("/super-admin");
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to provision institution";
+        error instanceof Error
+          ? error.message
+          : "Failed to provision institution";
 
       setError("root", { message });
       toast.error(message);
@@ -112,7 +93,6 @@ export function ProvisionTenantForm() {
               <ProvisionInstitutionFields
                 register={register}
                 errors={errors}
-                subdomainPreview={subdomainPreview}
               />
             </CardContent>
           </Card>
@@ -145,7 +125,9 @@ export function ProvisionTenantForm() {
             </CardContent>
             <CardFooter className="flex flex-col items-stretch gap-4 border-t sm:flex-row sm:items-center sm:justify-between">
               {errors.root?.message ? (
-                <p className="text-sm text-destructive">{errors.root.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.root.message}
+                </p>
               ) : (
                 <FieldLegend className="mb-0 text-sm font-normal text-muted-foreground">
                   Provisioning creates the tenant and queues an admin invite.
