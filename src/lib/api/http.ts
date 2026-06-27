@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "@/lib/api/config";
-import { getAccessToken } from "@/lib/auth/session";
+import { getAccessToken } from "@/features/auth/auth-access";
 
 export class ApiError extends Error {
   status: number;

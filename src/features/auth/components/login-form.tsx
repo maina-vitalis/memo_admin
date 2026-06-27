@@ -102,7 +102,8 @@ export function LoginForm() {
             Sign in to your portal
           </h2>
           <p className="text-sm leading-5 text-muted-foreground">
-            Enter your credentials to access your dashboard.
+            Super admins sign in with email and password. Institution admins
+            must also provide their institution subdomain.
           </p>
         </div>
 
@@ -153,8 +154,9 @@ export function LoginForm() {
                 />
               </InputGroup>
               <FieldDescription>
-                Optional for super admins. Institution admins must enter the
-                exact subdomain provisioned for their school.
+                Required for institution admins. Leave blank for super admins.
+                New institution admins should use the setup link from their
+                invitation email first.
               </FieldDescription>
               <FieldError errors={[errors.institutionSubdomain]} />
             </Field>

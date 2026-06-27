@@ -12,8 +12,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { AuthGate } from "@/features/super-admin/auth/components/auth-gate";
-import { clearAccessToken } from "@/lib/auth/session";
+import { SuperAdminAuthGuard } from "@/features/auth/components/super-admin-auth-guard";
+import { logout } from "@/features/auth/store/auth-slice";
+import { useAppDispatch } from "@/store/hooks";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -54,9 +55,10 @@ const navItems = [
 
 function useSignOut() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
 
   return () => {
-    clearAccessToken();
+    dispatch(logout());
     router.replace("/login");
   };
 }
@@ -122,7 +124,7 @@ export default function SuperAdminLayout({
   const pathname = usePathname();
 
   return (
-    <AuthGate>
+    <SuperAdminAuthGuard>
     <TooltipProvider>
       <SidebarProvider
         style={
@@ -208,6 +210,6 @@ export default function SuperAdminLayout({
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
-    </AuthGate>
+    </SuperAdminAuthGuard>
   );
 }

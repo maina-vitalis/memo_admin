@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import {
   selectAuthHydrated,
+  selectAuthRole,
   selectIsTenantAdminAuthenticated,
 } from "@/features/auth/store/auth-selectors";
+import { getPostLoginPath } from "@/features/auth/types";
 import { tenantApiConfig } from "@/features/tenant-admin/shared/api/client";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -17,6 +19,7 @@ type TenantAdminAuthGuardProps = {
 export function TenantAdminAuthGuard({ children }: TenantAdminAuthGuardProps) {
   const router = useRouter();
   const hydrated = useAppSelector(selectAuthHydrated);
+  const role = useAppSelector(selectAuthRole);
   const isAuthenticated = useAppSelector(selectIsTenantAdminAuthenticated);
   const useMock = tenantApiConfig.useMock;
 
@@ -25,10 +28,15 @@ export function TenantAdminAuthGuard({ children }: TenantAdminAuthGuardProps) {
 
     if (useMock) return;
 
+    if (role === "super-admin") {
+      router.replace(getPostLoginPath("super-admin"));
+      return;
+    }
+
     if (!isAuthenticated) {
       router.replace("/login");
     }
-  }, [hydrated, isAuthenticated, router, useMock]);
+  }, [hydrated, isAuthenticated, role, router, useMock]);
 
   if (!hydrated || (!useMock && !isAuthenticated)) {
     return (

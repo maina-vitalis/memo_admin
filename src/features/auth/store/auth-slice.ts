@@ -105,6 +105,12 @@ const authSlice = createSlice({
         state.status = state.role ? "authenticated" : "idle";
       }
     },
+    applyAuthSession(state, action: PayloadAction<LoginResult>) {
+      applyLoginResult(state, action.payload);
+      state.status = "authenticated";
+      state.error = null;
+      saveAuthToStorage(state);
+    },
     setTenantSubdomain(state, action: PayloadAction<string>) {
       state.tenantSubdomain = action.payload;
       saveAuthToStorage(state);
@@ -129,7 +135,7 @@ const authSlice = createSlice({
   },
 });
 
-export const { hydrateAuth, logout, clearAuthError, setTenantSubdomain } =
+export const { hydrateAuth, logout, clearAuthError, applyAuthSession, setTenantSubdomain } =
   authSlice.actions;
 
 export const authReducer = authSlice.reducer;

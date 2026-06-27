@@ -47,7 +47,7 @@ export function loadAuthFromStorage(): PersistedAuthState | null {
       superAdminToken,
       tenantToken: null,
       tenantSubdomain: null,
-      superAdmin: readJson(SUPER_ADMIN_PROFILE_KEY),
+      superAdmin: readJson(localStorage.getItem(SUPER_ADMIN_PROFILE_KEY)),
       tenantUser: null,
       institution: null,
     };
@@ -63,8 +63,8 @@ export function loadAuthFromStorage(): PersistedAuthState | null {
     tenantToken,
     tenantSubdomain,
     superAdmin: null,
-    tenantUser: readJson(TENANT_PROFILE_KEY),
-    institution: readJson(INSTITUTION_PROFILE_KEY),
+    tenantUser: readJson(localStorage.getItem(TENANT_PROFILE_KEY)),
+    institution: readJson(localStorage.getItem(INSTITUTION_PROFILE_KEY)),
   };
 }
 
