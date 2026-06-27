@@ -6,6 +6,7 @@ import { DashboardSeatUsageCard } from "@/features/tenant-admin/dashboard/compon
 import { RecentMemosTable } from "@/features/tenant-admin/dashboard/components/recent-memos-table";
 import { useDashboardSummary } from "@/features/tenant-admin/dashboard/api/use-dashboard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 function DashboardKpiSkeleton() {
   return (
@@ -18,8 +19,21 @@ function DashboardKpiSkeleton() {
 }
 
 export function InstitutionDashboardPage() {
-  const { data, isLoading, isFetching } = useDashboardSummary();
+  const { data, isLoading, isFetching, isError, error } = useDashboardSummary();
   const loading = isLoading || isFetching;
+
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <Alert variant="destructive">
+          <AlertTitle>Failed to load dashboard</AlertTitle>
+          <AlertDescription>
+            {error instanceof Error ? error.message : "An unexpected error occurred while loading the dashboard."}
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

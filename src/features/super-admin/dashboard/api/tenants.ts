@@ -6,7 +6,6 @@ import type {
   TenantStatus,
   TenantsResponse,
 } from "@/features/super-admin/dashboard/types/tenant";
-import { apiConfig } from "@/lib/api/config";
 import { apiRequest } from "@/lib/api/http";
 
 type BackendInstitution = {
@@ -18,21 +17,6 @@ type BackendInstitution = {
   seatQuota: number;
   subscriptionEndsAt: string | null;
 };
-
-const MOCK_TENANTS: Tenant[] = [
-  {
-    id: "kabete",
-    name: "Kabete National Polytechnic",
-    subdomain: "kabete",
-    shortcode: "KNP",
-    status: "active",
-    seatsActive: 450,
-    seatQuota: 500,
-    usersActive: 12_500,
-    subscriptionEndsLabel: "Oct 12, 2024",
-    subscriptionEndsVariant: "default",
-  },
-];
 
 function subscriptionLabel(
   endsAt: string | null,
@@ -114,7 +98,7 @@ function paginateTenants(
   };
 }
 
-async function fetchTenantsFromApi(
+export async function fetchTenants(
   filters: TenantFilters,
 ): Promise<TenantsResponse> {
   const institutions = await apiRequest<BackendInstitution[]>(
@@ -123,21 +107,4 @@ async function fetchTenantsFromApi(
   );
 
   return paginateTenants(institutions.map(mapInstitution), filters);
-}
-
-async function fetchTenantsMock(
-  filters: TenantFilters,
-): Promise<TenantsResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return paginateTenants(MOCK_TENANTS, filters);
-}
-
-export async function fetchTenants(
-  filters: TenantFilters,
-): Promise<TenantsResponse> {
-  if (apiConfig.useMock) {
-    return fetchTenantsMock(filters);
-  }
-
-  return fetchTenantsFromApi(filters);
 }

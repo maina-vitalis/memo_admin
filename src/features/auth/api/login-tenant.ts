@@ -1,9 +1,6 @@
 import { parseApiResponse } from "@/features/auth/api/parse-api-response";
 import type { TenantLoginResult } from "@/features/auth/types";
-import {
-  tenantApiConfig,
-  withMockDelay,
-} from "@/features/tenant-admin/shared/api/client";
+import { tenantApiConfig } from "@/features/tenant-admin/shared/api/client";
 
 type TenantLoginResponse = Omit<TenantLoginResult, "role">;
 
@@ -52,29 +49,6 @@ export async function loginTenantAdmin(
   password: string,
 ): Promise<TenantLoginResult> {
   const normalizedSubdomain = subdomain.trim().toLowerCase();
-
-  if (tenantApiConfig.useMock) {
-    await withMockDelay(null);
-
-    return {
-      role: "tenant-admin",
-      accessToken: "mock-tenant-admin-token",
-      tokenType: "Bearer",
-      expiresIn: "7d",
-      user: {
-        id: "mock-tenant-admin",
-        email: email.trim().toLowerCase(),
-        firstName: "Institution",
-        lastName: "Admin",
-      },
-      institution: {
-        id: "mock-institution",
-        name: "Demo Institution",
-        subdomain: normalizedSubdomain,
-      },
-      mustChangePassword: false,
-    };
-  }
 
   const result = await requestTenantLogin(
     normalizedSubdomain,

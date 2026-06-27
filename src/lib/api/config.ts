@@ -3,5 +3,5 @@ export const API_BASE_URL =
 
 export const apiConfig = {
   baseUrl: API_BASE_URL,
-  useMock: !process.env.NEXT_PUBLIC_API_URL,
+  useMock: false,
 } as const;

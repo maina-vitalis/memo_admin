@@ -9,7 +9,6 @@ import {
   selectIsSuperAdminAuthenticated,
 } from "@/features/auth/store/auth-selectors";
 import { getPostLoginPath } from "@/features/auth/types";
-import { superAdminConfig } from "@/features/super-admin/shared/config";
 import { Spinner } from "@/components/ui/spinner";
 
 type SuperAdminAuthGuardProps = {
@@ -21,12 +20,9 @@ export function SuperAdminAuthGuard({ children }: SuperAdminAuthGuardProps) {
   const hydrated = useAppSelector(selectAuthHydrated);
   const role = useAppSelector(selectAuthRole);
   const isAuthenticated = useAppSelector(selectIsSuperAdminAuthenticated);
-  const useMock = superAdminConfig.useMock;
 
   useEffect(() => {
     if (!hydrated) return;
-
-    if (useMock) return;
 
     if (role === "tenant-admin") {
       router.replace(getPostLoginPath("tenant-admin"));
@@ -36,9 +32,9 @@ export function SuperAdminAuthGuard({ children }: SuperAdminAuthGuardProps) {
     if (!isAuthenticated) {
       router.replace("/login");
     }
-  }, [hydrated, isAuthenticated, role, router, useMock]);
+  }, [hydrated, isAuthenticated, role, router]);
 
-  if (!hydrated || (!useMock && !isAuthenticated)) {
+  if (!hydrated || !isAuthenticated) {
     return (
       <div className="flex flex-1 items-center justify-center py-24">
         <Spinner className="size-8" />

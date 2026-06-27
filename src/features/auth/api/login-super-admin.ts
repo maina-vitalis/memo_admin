@@ -1,7 +1,6 @@
 import { parseApiResponse } from "@/features/auth/api/parse-api-response";
 import type { SuperAdminLoginResult } from "@/features/auth/types";
 import { superAdminConfig } from "@/features/super-admin/shared/config";
-import { withMockDelay } from "@/features/super-admin/shared/api/client";
 
 type SuperAdminLoginResponse = Omit<SuperAdminLoginResult, "role">;
 
@@ -48,23 +47,6 @@ export async function loginSuperAdmin(
   email: string,
   password: string,
 ): Promise<SuperAdminLoginResult> {
-  if (superAdminConfig.useMock) {
-    await withMockDelay(null);
-
-    return {
-      role: "super-admin",
-      accessToken: "mock-super-admin-token",
-      tokenType: "Bearer",
-      expiresIn: "7d",
-      superAdmin: {
-        id: "mock-super-admin",
-        email: email.trim().toLowerCase(),
-        firstName: "Platform",
-        lastName: "Admin",
-      },
-    };
-  }
-
   const result = await requestSuperAdminLogin(email, password);
 
   return {

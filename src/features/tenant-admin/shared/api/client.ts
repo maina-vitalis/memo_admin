@@ -4,7 +4,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export const tenantApiConfig = {
   baseUrl: API_BASE,
-  useMock: !API_BASE,
+  useMock: false,
 } as const;
 
 export class TenantApiError extends Error {
@@ -63,7 +63,4 @@ export async function tenantApi<T>(
   return response.json() as Promise<T>;
 }
 
-export async function withMockDelay<T>(data: T, ms = 300): Promise<T> {
-  await new Promise((resolve) => setTimeout(resolve, ms));
-  return data;
-}
+

@@ -67,7 +67,4 @@ export async function superAdminApi<T>(
   return body as T;
 }
 
-export async function withMockDelay<T>(data: T, ms = 300): Promise<T> {
-  await new Promise((resolve) => setTimeout(resolve, ms));
-  return data;
-}
+

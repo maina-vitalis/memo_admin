@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useTenants } from "@/features/super-admin/dashboard/api/use-tenants";
 import { TenantDirectoryTable } from "@/features/super-admin/dashboard/components/tenant-directory-table";
 import { TenantDirectoryToolbar } from "@/features/super-admin/dashboard/components/tenant-directory-toolbar";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import {
   defaultTenantFilters,
   type TenantFilters,
@@ -11,7 +12,7 @@ import {
 
 export function TenantDirectoryPage() {
   const [filters, setFilters] = useState<TenantFilters>(defaultTenantFilters);
-  const { data, isLoading, isFetching } = useTenants(filters);
+  const { data, isLoading, isFetching, isError, error } = useTenants(filters);
 
   const handleFiltersChange = useCallback((next: TenantFilters) => {
     setFilters(next);
@@ -32,18 +33,29 @@ export function TenantDirectoryPage() {
         </p>
       </div>
 
-      <TenantDirectoryToolbar
-        filters={filters}
-        onFiltersChange={handleFiltersChange}
-      />
+      {isError ? (
+        <Alert variant="destructive">
+          <AlertTitle>Failed to load tenant directory</AlertTitle>
+          <AlertDescription>
+            {error instanceof Error ? error.message : "An unexpected error occurred while loading the tenants."}
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <>
+          <TenantDirectoryToolbar
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+          />
 
-      <TenantDirectoryTable
-        data={data?.items ?? []}
-        total={total}
-        filters={filters}
-        isLoading={isLoading || isFetching}
-        onPageChange={handlePageChange}
-      />
+          <TenantDirectoryTable
+            data={data?.items ?? []}
+            total={total}
+            filters={filters}
+            isLoading={isLoading || isFetching}
+            onPageChange={handlePageChange}
+          />
+        </>
+      )}
     </div>
   );
 }

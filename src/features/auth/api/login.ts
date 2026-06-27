@@ -2,7 +2,6 @@ import { discoverInstitution } from "@/features/auth/api/discover-institution";
 import { loginSuperAdmin } from "@/features/auth/api/login-super-admin";
 import { loginTenantAdmin } from "@/features/auth/api/login-tenant";
 import type { LoginInput, LoginResult } from "@/features/auth/types";
-import { superAdminConfig } from "@/features/super-admin/shared/config";
 
 export class LoginError extends Error {
   constructor(message: string) {
@@ -19,15 +18,7 @@ export async function login(input: LoginInput): Promise<LoginResult> {
   try {
     return await loginSuperAdmin(email, password);
   } catch (superAdminError) {
-    // If mock mode is on and it fails, just throw immediately since
-    // tenant mock login also wouldn't know which institution to mock without discovering
-    if (superAdminConfig.useMock) {
-      throw new LoginError(
-        superAdminError instanceof Error
-          ? superAdminError.message
-          : "Invalid credentials",
-      );
-    }
+    // Ignore and proceed to discover institution for tenant login
   }
 
   // 2. If Super Admin fails, discover the institution using the email

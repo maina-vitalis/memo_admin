@@ -12,7 +12,6 @@ import {
     type LoginFormValues,
 } from "@/features/auth/login/schemas/login.schema";
 import {getPostLoginPath} from "@/features/auth/types";
-import {superAdminConfig} from "@/features/super-admin/shared/config";
 import {Alert, AlertDescription} from "@/components/ui/alert";
 import {Button} from "@/components/ui/button";
 import {
@@ -72,17 +71,7 @@ export function LoginForm() {
             aria-label="Sign in"
             onSubmit={handleSubmit(onSubmit)}
         >
-            <FieldGroup className="gap-4">
-                {superAdminConfig.useMock ? (
-                    <Alert>
-                        <AlertDescription>
-                            API URL is not configured — mock sign-in is active. Set{" "}
-                            <code className="font-mono text-xs">NEXT_PUBLIC_API_URL</code> to
-                            connect to the backend.
-                        </AlertDescription>
-                    </Alert>
-                ) : null}
-
+        <FieldGroup className="gap-4">
                 <Field data-invalid={!!errors.email}>
                     <FieldLabel htmlFor="login-email">Email address</FieldLabel>
                     <InputGroup className="h-10">

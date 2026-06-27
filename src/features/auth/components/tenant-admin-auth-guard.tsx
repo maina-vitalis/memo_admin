@@ -9,7 +9,6 @@ import {
   selectIsTenantAdminAuthenticated,
 } from "@/features/auth/store/auth-selectors";
 import { getPostLoginPath } from "@/features/auth/types";
-import { tenantApiConfig } from "@/features/tenant-admin/shared/api/client";
 import { Spinner } from "@/components/ui/spinner";
 
 type TenantAdminAuthGuardProps = {
@@ -21,12 +20,9 @@ export function TenantAdminAuthGuard({ children }: TenantAdminAuthGuardProps) {
   const hydrated = useAppSelector(selectAuthHydrated);
   const role = useAppSelector(selectAuthRole);
   const isAuthenticated = useAppSelector(selectIsTenantAdminAuthenticated);
-  const useMock = tenantApiConfig.useMock;
 
   useEffect(() => {
     if (!hydrated) return;
-
-    if (useMock) return;
 
     if (role === "super-admin") {
       router.replace(getPostLoginPath("super-admin"));
@@ -36,9 +32,9 @@ export function TenantAdminAuthGuard({ children }: TenantAdminAuthGuardProps) {
     if (!isAuthenticated) {
       router.replace("/login");
     }
-  }, [hydrated, isAuthenticated, role, router, useMock]);
+  }, [hydrated, isAuthenticated, role, router]);
 
-  if (!hydrated || (!useMock && !isAuthenticated)) {
+  if (!hydrated || !isAuthenticated) {
     return (
       <div className="flex flex-1 items-center justify-center py-24">
         <Spinner className="size-8" />
