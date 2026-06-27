@@ -20,6 +20,10 @@ export type Tenant = {
   usersActive: number;
   subscriptionEndsLabel: string;
   subscriptionEndsVariant: SubscriptionEndsVariant;
+  plan: "trial" | "basic" | "pro";
+  contactEmail: string;
+  isActive: boolean;
+  provisioningNotes?: string;
 };
 
 export type TenantsResponse = {

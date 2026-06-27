@@ -1,13 +1,16 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { EyeIcon, MoreHorizontalIcon, PencilIcon } from "lucide-react";
+import { PencilIcon, Trash2Icon } from "lucide-react";
 import { SeatQuotaCell } from "@/features/super-admin/dashboard/components/seat-quota-cell";
 import { TenantStatusBadge } from "@/features/super-admin/dashboard/components/tenant-status-badge";
 import type { Tenant } from "@/features/super-admin/dashboard/types/tenant";
 import { cn } from "@/lib/utils";
 
-export const tenantTableColumns: ColumnDef<Tenant>[] = [
+export const getTenantTableColumns = (
+  onEdit: (tenant: Tenant) => void,
+  onDelete: (tenant: Tenant) => void,
+): ColumnDef<Tenant>[] => [
   {
     accessorKey: "name",
     header: "Institution Name",
@@ -64,17 +67,11 @@ export const tenantTableColumns: ColumnDef<Tenant>[] = [
   {
     id: "actions",
     header: "Actions",
-    cell: () => (
+    cell: ({ row }) => (
       <div className="flex justify-end gap-1 text-muted-foreground/70 transition-colors group-hover:text-muted-foreground">
         <button
           type="button"
-          className="rounded p-1 transition-colors hover:text-primary"
-          aria-label="View institution"
-        >
-          <EyeIcon className="size-5" />
-        </button>
-        <button
-          type="button"
+          onClick={() => onEdit(row.original)}
           className="rounded p-1 transition-colors hover:text-primary"
           aria-label="Edit institution"
         >
@@ -82,10 +79,11 @@ export const tenantTableColumns: ColumnDef<Tenant>[] = [
         </button>
         <button
           type="button"
-          className="rounded p-1 transition-colors hover:text-primary"
-          aria-label="More actions"
+          onClick={() => onDelete(row.original)}
+          className="rounded p-1 transition-colors hover:text-destructive"
+          aria-label="Delete institution"
         >
-          <MoreHorizontalIcon className="size-5" />
+          <Trash2Icon className="size-5" />
         </button>
       </div>
     ),

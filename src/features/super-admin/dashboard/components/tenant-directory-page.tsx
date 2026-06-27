@@ -5,6 +5,9 @@ import { useTenants } from "@/features/super-admin/dashboard/api/use-tenants";
 import { TenantDirectoryTable } from "@/features/super-admin/dashboard/components/tenant-directory-table";
 import { TenantDirectoryToolbar } from "@/features/super-admin/dashboard/components/tenant-directory-toolbar";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { EditTenantDialog } from "@/features/super-admin/dashboard/components/edit-tenant-dialog";
+import { DeleteTenantDialog } from "@/features/super-admin/dashboard/components/delete-tenant-dialog";
+import type { Tenant } from "@/features/super-admin/dashboard/types/tenant";
 import {
   defaultTenantFilters,
   type TenantFilters,
@@ -13,6 +16,9 @@ import {
 export function TenantDirectoryPage() {
   const [filters, setFilters] = useState<TenantFilters>(defaultTenantFilters);
   const { data, isLoading, isFetching, isError, error } = useTenants(filters);
+
+  const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
+  const [deletingTenant, setDeletingTenant] = useState<Tenant | null>(null);
 
   const handleFiltersChange = useCallback((next: TenantFilters) => {
     setFilters(next);
@@ -53,9 +59,23 @@ export function TenantDirectoryPage() {
             filters={filters}
             isLoading={isLoading || isFetching}
             onPageChange={handlePageChange}
+            onEdit={setEditingTenant}
+            onDelete={setDeletingTenant}
           />
         </>
       )}
+
+      <EditTenantDialog
+        tenant={editingTenant}
+        isOpen={editingTenant !== null}
+        onClose={() => setEditingTenant(null)}
+      />
+
+      <DeleteTenantDialog
+        tenant={deletingTenant}
+        isOpen={deletingTenant !== null}
+        onClose={() => setDeletingTenant(null)}
+      />
     </div>
   );
 }

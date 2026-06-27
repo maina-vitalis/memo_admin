@@ -55,6 +55,10 @@ export function mapInstitutionToTenant(institution: InstitutionRecord): Tenant {
     seatsActive: 0,
     seatQuota: institution.seatQuota,
     usersActive: 0,
+    plan: institution.plan,
+    contactEmail: institution.contactEmail,
+    isActive: institution.isActive,
+    provisioningNotes: institution.provisioningNotes ?? undefined,
     ...subscriptionMeta,
   };
 }

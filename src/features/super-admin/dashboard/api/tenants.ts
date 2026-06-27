@@ -16,6 +16,10 @@ type BackendInstitution = {
   status: TenantStatus;
   seatQuota: number;
   subscriptionEndsAt: string | null;
+  plan: "trial" | "basic" | "pro";
+  contactEmail: string;
+  isActive: boolean;
+  provisioningNotes: string | null;
 };
 
 function subscriptionLabel(
@@ -63,6 +67,10 @@ function mapInstitution(institution: BackendInstitution): Tenant {
     usersActive: 0,
     subscriptionEndsLabel: label,
     subscriptionEndsVariant: variant,
+    plan: institution.plan,
+    contactEmail: institution.contactEmail,
+    isActive: institution.isActive,
+    provisioningNotes: institution.provisioningNotes ?? undefined,
   };
 }
 
@@ -107,4 +115,27 @@ export async function fetchTenants(
   );
 
   return paginateTenants(institutions.map(mapInstitution), filters);
+}
+
+export async function updateTenant(
+  id: string,
+  data: Partial<Omit<Tenant, "id" | "subdomain" | "shortcode">>,
+): Promise<Tenant> {
+  return apiRequest<Tenant>(`/superadmin/institutions/${id}`, {
+    method: "PATCH",
+    auth: true,
+    body: data,
+  });
+}
+
+export async function deleteTenant(
+  id: string,
+): Promise<{ success: boolean; message: string }> {
+  return apiRequest<{ success: boolean; message: string }>(
+    `/superadmin/institutions/${id}`,
+    {
+      method: "DELETE",
+      auth: true,
+    },
+  );
 }

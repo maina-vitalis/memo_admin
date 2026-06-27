@@ -1,11 +1,12 @@
 "use client";
 
+import * as React from "react";
 import {
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { tenantTableColumns } from "@/features/super-admin/dashboard/components/tenant-table-columns";
+import { getTenantTableColumns } from "@/features/super-admin/dashboard/components/tenant-table-columns";
 import { TenantTablePagination } from "@/features/super-admin/dashboard/components/tenant-table-pagination";
 import type { TenantFilters } from "@/features/super-admin/dashboard/schemas/tenant-filters.schema";
 import type { Tenant } from "@/features/super-admin/dashboard/types/tenant";
@@ -18,6 +19,8 @@ type TenantDirectoryTableProps = {
   filters: TenantFilters;
   isLoading?: boolean;
   onPageChange: (page: number) => void;
+  onEdit: (tenant: Tenant) => void;
+  onDelete: (tenant: Tenant) => void;
 };
 
 export function TenantDirectoryTable({
@@ -26,10 +29,17 @@ export function TenantDirectoryTable({
   filters,
   isLoading,
   onPageChange,
+  onEdit,
+  onDelete,
 }: TenantDirectoryTableProps) {
+  const columns = React.useMemo(
+    () => getTenantTableColumns(onEdit, onDelete),
+    [onEdit, onDelete],
+  );
+
   const table = useReactTable({
     data,
-    columns: tenantTableColumns,
+    columns,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     pageCount: Math.ceil(total / filters.pageSize),
@@ -37,7 +47,7 @@ export function TenantDirectoryTable({
 
   const start = total === 0 ? 0 : (filters.page - 1) * filters.pageSize + 1;
   const end = Math.min(filters.page * filters.pageSize, total);
-  const columnCount = tenantTableColumns.length;
+  const columnCount = columns.length;
 
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
