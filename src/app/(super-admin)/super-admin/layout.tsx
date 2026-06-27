@@ -12,8 +12,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+<<<<<<< HEAD
 import { AuthGate } from "@/features/super-admin/auth/components/auth-gate";
 import { clearAccessToken } from "@/lib/auth/session";
+=======
+import { logout } from "@/features/auth/store/auth-slice";
+import { useAppDispatch } from "@/store/hooks";
+import { SuperAdminAuthGuard } from "@/features/auth/components/super-admin-auth-guard";
+>>>>>>> 8e5303006be458d7f1c79692b03ba1221dfcc55f
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -52,6 +58,7 @@ const navItems = [
   { label: "Help", href: "/super-admin/help", icon: CircleHelpIcon },
 ] as const;
 
+<<<<<<< HEAD
 function useSignOut() {
   const router = useRouter();
 
@@ -102,6 +109,9 @@ function UserAccountMenu() {
     </DropdownMenu>
   );
 }
+=======
+const authItems = [{ label: "Sign out", icon: LogOutIcon }] as const;
+>>>>>>> 8e5303006be458d7f1c79692b03ba1221dfcc55f
 
 function isNavActive(pathname: string, href: string) {
   if (href === "/super-admin") {
@@ -120,9 +130,20 @@ export default function SuperAdminLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  function handleSignOut() {
+    dispatch(logout());
+    router.push("/login");
+  }
 
   return (
+<<<<<<< HEAD
     <AuthGate>
+=======
+    <SuperAdminAuthGuard>
+>>>>>>> 8e5303006be458d7f1c79692b03ba1221dfcc55f
     <TooltipProvider>
       <SidebarProvider
         style={
@@ -176,9 +197,29 @@ export default function SuperAdminLayout({
 
           <SidebarFooter className="p-2">
             <SidebarMenu>
+<<<<<<< HEAD
               <SidebarMenuItem>
                 <SignOutButton />
               </SidebarMenuItem>
+=======
+              {authItems.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <SidebarMenuItem key={item.label}>
+                    <SidebarMenuButton
+                      type="button"
+                      tooltip={item.label}
+                      onClick={handleSignOut}
+                      className="h-11 rounded-none text-sidebar-foreground/70 hover:bg-primary-container/50 hover:text-sidebar-foreground"
+                    >
+                      <Icon />
+                      <span>{item.label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+>>>>>>> 8e5303006be458d7f1c79692b03ba1221dfcc55f
             </SidebarMenu>
           </SidebarFooter>
 
@@ -208,6 +249,10 @@ export default function SuperAdminLayout({
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
+<<<<<<< HEAD
     </AuthGate>
+=======
+    </SuperAdminAuthGuard>
+>>>>>>> 8e5303006be458d7f1c79692b03ba1221dfcc55f
   );
 }

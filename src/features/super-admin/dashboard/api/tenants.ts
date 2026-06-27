@@ -23,7 +23,7 @@ const MOCK_TENANTS: Tenant[] = [
   {
     id: "kabete",
     name: "Kabete National Polytechnic",
-    subdomain: "kabete.nostalqic.com",
+    subdomain: "kabete",
     shortcode: "KNP",
     status: "active",
     seatsActive: 450,

@@ -13,9 +13,7 @@ export const provisionTenantSchema = z.object({
     .trim()
     .transform((value) => value.toUpperCase())
     .pipe(
-      z
-        .string()
-        .regex(shortcodeRegex, "Use 2–10 uppercase letters or numbers"),
+      z.string().regex(shortcodeRegex, "Use 2–10 uppercase letters or numbers"),
     ),
   subdomainSlug: z
     .string()
