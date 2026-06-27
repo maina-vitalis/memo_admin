@@ -3,7 +3,6 @@ export type AuthRole = "super-admin" | "tenant-admin";
 export type LoginInput = {
   email: string;
   password: string;
-  institutionSubdomain?: string;
 };
 
 export type SuperAdminLoginResult = {

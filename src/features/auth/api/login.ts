@@ -1,3 +1,4 @@
+import { discoverInstitution } from "@/features/auth/api/discover-institution";
 import { loginSuperAdmin } from "@/features/auth/api/login-super-admin";
 import { loginTenantAdmin } from "@/features/auth/api/login-tenant";
 import type { LoginInput, LoginResult } from "@/features/auth/types";
@@ -13,35 +14,38 @@ export class LoginError extends Error {
 export async function login(input: LoginInput): Promise<LoginResult> {
   const email = input.email.trim().toLowerCase();
   const password = input.password;
-  const institutionSubdomain = input.institutionSubdomain?.trim().toLowerCase();
 
-  if (!institutionSubdomain) {
-    try {
-      return await loginSuperAdmin(email, password);
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to sign in";
-
+  // 1. Attempt to login as Platform Admin (Super Admin) first
+  try {
+    return await loginSuperAdmin(email, password);
+  } catch (superAdminError) {
+    // If mock mode is on and it fails, just throw immediately since
+    // tenant mock login also wouldn't know which institution to mock without discovering
+    if (superAdminConfig.useMock) {
       throw new LoginError(
-        superAdminConfig.useMock
-          ? message
-          : "Invalid credentials. Institution admins must provide an institution code.",
+        superAdminError instanceof Error
+          ? superAdminError.message
+          : "Invalid credentials",
       );
     }
   }
 
+  // 2. If Super Admin fails, discover the institution using the email
+  let subdomain: string;
   try {
-    return await loginTenantAdmin(institutionSubdomain, email, password);
-  } catch (tenantError) {
-    try {
-      return await loginSuperAdmin(email, password);
-    } catch {
-      const message =
-        tenantError instanceof Error
-          ? tenantError.message
-          : "Failed to sign in";
+    const institution = await discoverInstitution(email);
+    subdomain = institution.subdomain;
+  } catch (discoverError) {
+    throw new LoginError("Invalid credentials");
+  }
 
-      throw new LoginError(message);
-    }
+  // 3. Attempt to login as Tenant Admin with the discovered subdomain
+  try {
+    return await loginTenantAdmin(subdomain, email, password);
+  } catch (tenantError) {
+    throw new LoginError(
+      tenantError instanceof Error ? tenantError.message : "Invalid credentials",
+    );
   }
 }
+
