@@ -46,14 +46,14 @@ export function ProvisionInstitutionFields({
       </FormField>
 
       <FormField
-        label="Subdomain"
-        description="Saved exactly as entered. Institution admins use this value when signing in."
+        label="Institution domain"
+        description="Full domain with extension (.ac.ke, .com, .edu, etc.). Admins use this when signing in."
         error={errors.subdomainSlug}
         htmlFor="subdomainSlug"
       >
         <Input
           id="subdomainSlug"
-          placeholder="e.g. eldoret-polytechnic"
+          placeholder="e.g. eldoretpolytechnic.ac.ke"
           aria-invalid={!!errors.subdomainSlug}
           {...register("subdomainSlug")}
         />

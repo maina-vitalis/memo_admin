@@ -1,6 +1,12 @@
+import {
+  INSTITUTION_DOMAIN_MAX_LENGTH,
+  INSTITUTION_DOMAIN_MESSAGE,
+  INSTITUTION_DOMAIN_REGEX,
+  isReservedInstitutionDomain,
+  normalizeInstitutionDomain,
+} from "@/lib/institution-domain";
 import { z } from "zod";
 
-const subdomainSlugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const shortcodeRegex = /^[A-Z0-9]{2,10}$/;
 
 export const provisionTenantSchema = z.object({
@@ -18,10 +24,19 @@ export const provisionTenantSchema = z.object({
   subdomainSlug: z
     .string()
     .trim()
-    .toLowerCase()
-    .regex(
-      subdomainSlugRegex,
-      "Use lowercase letters, numbers, and hyphens only",
+    .transform((value) => normalizeInstitutionDomain(value))
+    .pipe(
+      z
+        .string()
+        .max(
+          INSTITUTION_DOMAIN_MAX_LENGTH,
+          `Domain must be at most ${INSTITUTION_DOMAIN_MAX_LENGTH} characters`,
+        )
+        .regex(INSTITUTION_DOMAIN_REGEX, INSTITUTION_DOMAIN_MESSAGE)
+        .refine(
+          (value) => !isReservedInstitutionDomain(value),
+          "This domain is reserved. Choose a different domain.",
+        ),
     ),
   seatQuota: z
     .number({ invalid_type_error: "Seat quota is required" })

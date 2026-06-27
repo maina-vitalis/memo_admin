@@ -1,6 +1,6 @@
-import { discoverInstitution } from "@/features/auth/api/discover-institution";
-import { loginSuperAdmin } from "@/features/auth/api/login-super-admin";
-import { loginTenantAdmin } from "@/features/auth/api/login-tenant";
+import { discoverInstitution } from "@/features/auth/login/api/discover-institution";
+import { loginSuperAdmin } from "@/features/auth/login/api/login-super-admin";
+import { loginTenantAdmin } from "@/features/auth/login/api/login-tenant";
 import type { LoginInput, LoginResult } from "@/features/auth/types";
 
 export class LoginError extends Error {
@@ -39,4 +39,3 @@ export async function login(input: LoginInput): Promise<LoginResult> {
     );
   }
 }
-

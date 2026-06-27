@@ -6,7 +6,7 @@ import {useRouter} from "next/navigation";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {toast} from "sonner";
-import {useLogin} from "@/features/auth/api/use-login";
+import {useLogin} from "@/features/auth/login/api/use-login";
 import {
     loginSchema,
     type LoginFormValues,

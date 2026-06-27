@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { login as loginRequest } from "@/features/auth/api/login";
+import { login as loginRequest } from "@/features/auth/login/api/login";
 import {
   clearAuthStorage,
   loadAuthFromStorage,
