@@ -56,11 +56,20 @@ export async function tenantApi<T>(
     );
   }
 
+  const body = (await response.json().catch(() => null)) as
+    | { success: true; data: T }
+    | { message?: string | string[] }
+    | null;
+
   if (response.status === 204) {
     return undefined as T;
   }
 
-  return response.json() as Promise<T>;
+  if (body && typeof body === "object" && "data" in body) {
+    return body.data;
+  }
+
+  return body as T;
 }
 
 
