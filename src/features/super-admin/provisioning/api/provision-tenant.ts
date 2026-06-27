@@ -2,17 +2,8 @@ import type {
   ProvisionTenantInput,
   ProvisionTenantResult,
 } from "@/features/super-admin/provisioning/types/provision-tenant";
-<<<<<<< HEAD
 import { apiConfig } from "@/lib/api/config";
 import { apiRequest } from "@/lib/api/http";
-=======
-import {
-  superAdminApi,
-  withMockDelay,
-} from "@/features/super-admin/shared/api/client";
-import { superAdminConfig } from "@/features/super-admin/shared/config";
-import type { ProvisionInstitutionResponse } from "@/features/super-admin/shared/types/institution";
->>>>>>> 8e5303006be458d7f1c79692b03ba1221dfcc55f
 
 const RESERVED_SUBDOMAINS = new Set(["www", "admin", "api", "app", "mail"]);
 
@@ -29,7 +20,7 @@ type BackendProvisionResult = {
 async function provisionTenantMock(
   input: ProvisionTenantInput,
 ): Promise<ProvisionTenantResult> {
-  await withMockDelay(null, 800);
+  await new Promise((resolve) => setTimeout(resolve, 800));
 
   if (RESERVED_SUBDOMAINS.has(input.subdomainSlug)) {
     throw new Error("This subdomain is reserved. Choose a different slug.");
@@ -45,7 +36,6 @@ async function provisionTenantMock(
   };
 }
 
-<<<<<<< HEAD
 async function provisionTenantApi(
   input: ProvisionTenantInput,
 ): Promise<ProvisionTenantResult> {
@@ -75,43 +65,15 @@ async function provisionTenantApi(
     shortcode: result.shortcode,
     status: result.status,
     seatQuota: result.seatQuota,
-=======
-function mapProvisionResponse(
-  response: ProvisionInstitutionResponse,
-): ProvisionTenantResult {
-  return {
-    id: response.id,
-    name: response.name,
-    subdomain: response.subdomain,
-    shortcode: response.shortcode,
-    status: response.status,
-    seatQuota: response.seatQuota,
->>>>>>> 8e5303006be458d7f1c79692b03ba1221dfcc55f
   };
 }
 
 export async function provisionTenant(
   input: ProvisionTenantInput,
 ): Promise<ProvisionTenantResult> {
-<<<<<<< HEAD
   if (apiConfig.useMock) {
     return provisionTenantMock(input);
   }
 
   return provisionTenantApi(input);
-=======
-  if (superAdminConfig.useMock) {
-    return provisionTenantMock(input);
-  }
-
-  const response = await superAdminApi<ProvisionInstitutionResponse>(
-    "/superadmin/institutions/provision",
-    {
-      method: "POST",
-      body: JSON.stringify(input),
-    },
-  );
-
-  return mapProvisionResponse(response);
->>>>>>> 8e5303006be458d7f1c79692b03ba1221dfcc55f
 }
