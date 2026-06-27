@@ -1,5 +1,23 @@
+import { format, formatDistanceToNow, isPast, differenceInDays } from "date-fns";
 import type { TenantFilters } from "@/features/super-admin/dashboard/schemas/tenant-filters.schema";
-import type { Tenant, TenantsResponse } from "@/features/super-admin/dashboard/types/tenant";
+import type {
+  SubscriptionEndsVariant,
+  Tenant,
+  TenantStatus,
+  TenantsResponse,
+} from "@/features/super-admin/dashboard/types/tenant";
+import { apiConfig } from "@/lib/api/config";
+import { apiRequest } from "@/lib/api/http";
+
+type BackendInstitution = {
+  id: string;
+  name: string;
+  subdomain: string;
+  schoolCode: string;
+  status: TenantStatus;
+  seatQuota: number;
+  subscriptionEndsAt: string | null;
+};
 
 const MOCK_TENANTS: Tenant[] = [
   {
@@ -14,58 +32,55 @@ const MOCK_TENANTS: Tenant[] = [
     subscriptionEndsLabel: "Oct 12, 2024",
     subscriptionEndsVariant: "default",
   },
-  {
-    id: "eldoret",
-    name: "Eldoret National Polytechnic",
-    subdomain: "eldoret.nostalqic.com",
-    shortcode: "TENP",
-    status: "pending",
-    seatsActive: 0,
-    seatQuota: 100,
-    usersActive: 0,
-    subscriptionEndsLabel: "Ends in 5 days",
-    subscriptionEndsVariant: "warning",
-  },
-  {
-    id: "nyeri",
-    name: "Nyeri National Polytechnic",
-    subdomain: "nyeri.nostalqic.com",
-    shortcode: "NNP",
-    status: "suspended",
-    seatsActive: 250,
-    seatQuota: 250,
-    usersActive: 0,
-    subscriptionEndsLabel: "Ended Jan 15, 2024",
-    subscriptionEndsVariant: "error",
-  },
-  {
-    id: "kisumu",
-    name: "Kisumu National Polytechnic",
-    subdomain: "kisumu.nostalqic.com",
-    shortcode: "TKNP",
-    status: "trial",
-    seatsActive: 45,
-    seatQuota: 50,
-    usersActive: 32,
-    subscriptionEndsLabel: "Ends in 12 days",
-    subscriptionEndsVariant: "warning",
-  },
-  ...Array.from({ length: 43 }, (_, index) => {
-    const id = `tenant-${index + 5}`;
-    return {
-      id,
-      name: `TVET Institute ${index + 5}`,
-      subdomain: `${id}.nostalqic.com`,
-      shortcode: `T${index + 5}`,
-      status: "active" as const,
-      seatsActive: 120 + index,
-      seatQuota: 300,
-      usersActive: 800 + index * 10,
-      subscriptionEndsLabel: "Dec 31, 2025",
-      subscriptionEndsVariant: "default" as const,
-    };
-  }),
 ];
+
+function subscriptionLabel(
+  endsAt: string | null,
+): { label: string; variant: SubscriptionEndsVariant } {
+  if (!endsAt) {
+    return { label: "Not set", variant: "default" };
+  }
+
+  const date = new Date(endsAt);
+
+  if (isPast(date)) {
+    return {
+      label: `Ended ${format(date, "MMM d, yyyy")}`,
+      variant: "error",
+    };
+  }
+
+  const daysLeft = differenceInDays(date, new Date());
+
+  if (daysLeft <= 14) {
+    return {
+      label: `Ends ${formatDistanceToNow(date, { addSuffix: true })}`,
+      variant: "warning",
+    };
+  }
+
+  return {
+    label: format(date, "MMM d, yyyy"),
+    variant: "default",
+  };
+}
+
+function mapInstitution(institution: BackendInstitution): Tenant {
+  const { label, variant } = subscriptionLabel(institution.subscriptionEndsAt);
+
+  return {
+    id: institution.id,
+    name: institution.name,
+    subdomain: institution.subdomain,
+    shortcode: institution.schoolCode,
+    status: institution.status,
+    seatsActive: 0,
+    seatQuota: institution.seatQuota,
+    usersActive: 0,
+    subscriptionEndsLabel: label,
+    subscriptionEndsVariant: variant,
+  };
+}
 
 function matchesSearch(tenant: Tenant, search: string) {
   const query = search.trim().toLowerCase();
@@ -78,12 +93,11 @@ function matchesSearch(tenant: Tenant, search: string) {
   );
 }
 
-export async function fetchTenants(
+function paginateTenants(
+  tenants: Tenant[],
   filters: TenantFilters,
-): Promise<TenantsResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-
-  const filtered = MOCK_TENANTS.filter((tenant) => {
+): TenantsResponse {
+  const filtered = tenants.filter((tenant) => {
     const statusMatch =
       filters.status === "all" || tenant.status === filters.status;
     return statusMatch && matchesSearch(tenant, filters.search);
@@ -98,4 +112,32 @@ export async function fetchTenants(
     page: filters.page,
     pageSize: filters.pageSize,
   };
+}
+
+async function fetchTenantsFromApi(
+  filters: TenantFilters,
+): Promise<TenantsResponse> {
+  const institutions = await apiRequest<BackendInstitution[]>(
+    "/superadmin/institutions",
+    { auth: true },
+  );
+
+  return paginateTenants(institutions.map(mapInstitution), filters);
+}
+
+async function fetchTenantsMock(
+  filters: TenantFilters,
+): Promise<TenantsResponse> {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return paginateTenants(MOCK_TENANTS, filters);
+}
+
+export async function fetchTenants(
+  filters: TenantFilters,
+): Promise<TenantsResponse> {
+  if (apiConfig.useMock) {
+    return fetchTenantsMock(filters);
+  }
+
+  return fetchTenantsFromApi(filters);
 }

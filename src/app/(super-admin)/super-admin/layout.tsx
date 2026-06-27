@@ -11,8 +11,18 @@ import {
   UserCircleIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { AuthGate } from "@/features/super-admin/auth/components/auth-gate";
+import { clearAccessToken } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
@@ -42,9 +52,56 @@ const navItems = [
   { label: "Help", href: "/super-admin/help", icon: CircleHelpIcon },
 ] as const;
 
-const authItems = [
-  { label: "Sign out", href: "/login", icon: LogOutIcon },
-] as const;
+function useSignOut() {
+  const router = useRouter();
+
+  return () => {
+    clearAccessToken();
+    router.replace("/login");
+  };
+}
+
+function SignOutButton() {
+  const signOut = useSignOut();
+
+  return (
+    <SidebarMenuButton
+      tooltip="Sign out"
+      className="h-11 rounded-none text-sidebar-foreground/70 hover:bg-primary-container/50 hover:text-sidebar-foreground"
+      onClick={signOut}
+    >
+      <LogOutIcon />
+      <span>Sign out</span>
+    </SidebarMenuButton>
+  );
+}
+
+function UserAccountMenu() {
+  const signOut = useSignOut();
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="text-muted-foreground hover:text-primary"
+          aria-label="Account menu"
+        >
+          <UserCircleIcon />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuLabel>Platform admin</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem variant="destructive" onClick={signOut}>
+          <LogOutIcon />
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 function isNavActive(pathname: string, href: string) {
   if (href === "/super-admin") {
@@ -65,6 +122,7 @@ export default function SuperAdminLayout({
   const pathname = usePathname();
 
   return (
+    <AuthGate>
     <TooltipProvider>
       <SidebarProvider
         style={
@@ -118,24 +176,9 @@ export default function SuperAdminLayout({
 
           <SidebarFooter className="p-2">
             <SidebarMenu>
-              {authItems.map((item) => {
-                const Icon = item.icon;
-
-                return (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      asChild
-                      tooltip={item.label}
-                      className="h-11 rounded-none text-sidebar-foreground/70 hover:bg-primary-container/50 hover:text-sidebar-foreground"
-                    >
-                      <Link href={item.href}>
-                        <Icon />
-                        <span>{item.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+              <SidebarMenuItem>
+                <SignOutButton />
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarFooter>
 
@@ -148,7 +191,7 @@ export default function SuperAdminLayout({
             <Separator orientation="vertical" className="mr-2 h-4!" />
             <h2 className="text-lg font-semibold text-primary">{PLATFORM_NAME}</h2>
 
-            <div className="ml-auto flex items-center gap-1">
+            <div className="ml-auto flex items-center gap-2">
               <Button
                 variant="ghost"
                 size="icon-sm"
@@ -157,14 +200,7 @@ export default function SuperAdminLayout({
               >
                 <BellIcon />
               </Button>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground hover:text-primary"
-                aria-label="Account"
-              >
-                <UserCircleIcon />
-              </Button>
+              <UserAccountMenu />
             </div>
           </header>
 
@@ -172,5 +208,6 @@ export default function SuperAdminLayout({
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
+    </AuthGate>
   );
 }
