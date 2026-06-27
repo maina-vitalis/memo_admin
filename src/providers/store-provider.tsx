@@ -1,20 +1,20 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { Provider } from "react-redux";
 import { hydrateAuth } from "@/features/auth/store/auth-slice";
-import { getStore, type AppStore } from "@/store/store";
+import { getStore } from "@/store/store";
 
 type StoreProviderProps = {
   children: React.ReactNode;
 };
 
 export function StoreProvider({ children }: StoreProviderProps) {
-  const storeRef = useRef<AppStore>(getStore());
+  const store = getStore();
 
   useEffect(() => {
-    storeRef.current.dispatch(hydrateAuth());
-  }, []);
+    store.dispatch(hydrateAuth());
+  }, [store]);
 
-  return <Provider store={storeRef.current}>{children}</Provider>;
+  return <Provider store={store}>{children}</Provider>;
 }
