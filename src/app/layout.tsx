@@ -19,8 +19,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NostalQic Admin",
-  description: "NostalQic super admin portal",
+  title: "TVET MEMO",
+  description: "TVET MEMO admin portal",
+  icons: {
+    icon: "/logo/icon.png",
+  },
 };
 
 export default function RootLayout({

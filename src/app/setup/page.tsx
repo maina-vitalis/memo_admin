@@ -4,9 +4,9 @@ import {AccountSetupPage} from "@/features/auth/account-setup/components/account
 import {Spinner} from "@/components/ui/spinner";
 
 export const metadata: Metadata = {
-    title: "Set Up Your Account — Institution Admin",
+    title: "Set Up Your Account — TVET MEMO",
     description:
-        "Create your password and activate your institution admin account.",
+        "Create your password and activate your institution admin account on TVET MEMO.",
 };
 
 /**

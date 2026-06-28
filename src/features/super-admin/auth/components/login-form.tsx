@@ -80,9 +80,12 @@ export function LoginForm() {
     <div className="flex min-h-svh items-center justify-center bg-background p-6">
       <Card className="w-full max-w-md">
         <CardHeader>
+          <div className="mb-2 flex justify-center">
+            <img src="/logo/icon.png" alt="TVET MEMO" className="size-10" />
+          </div>
           <CardTitle>Super admin sign in</CardTitle>
           <CardDescription>
-            Sign in to manage institutions on the NostalQic platform.
+            Sign in to manage institutions on the TVET MEMO platform.
           </CardDescription>
         </CardHeader>
 

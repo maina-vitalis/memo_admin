@@ -8,7 +8,7 @@ import {getPostLoginPath} from "@/features/auth/types";
 import {Card, CardContent, CardFooter} from "@/components/ui/card";
 import {Separator} from "@/components/ui/separator";
 
-const PLATFORM_NAME = "NostalQic";
+const PLATFORM_NAME = "TVET MEMO";
 
 /**
  * The main login card displayed on the /login page.
@@ -34,6 +34,11 @@ LoginCard() {
             <CardContent className="pt-8">
                 {/* Header */}
                 <div className="mb-6 flex flex-col items-center text-center">
+                    <img
+                      src="/logo/icon.png"
+                      alt="TVET MEMO"
+                      className="mb-3 size-12"
+                    />
                     <h1 className="mb-3 text-[32px] leading-10 font-semibold tracking-tight text-primary-container">
                         {PLATFORM_NAME}
                     </h1>

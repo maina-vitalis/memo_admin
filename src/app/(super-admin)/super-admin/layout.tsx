@@ -43,7 +43,7 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-const PLATFORM_NAME = "NostalQic";
+const PLATFORM_NAME = "TVET MEMO";
 
 const navItems = [
   { label: "Dashboard", href: "/super-admin", icon: LayoutDashboardIcon },
@@ -136,9 +136,16 @@ export default function SuperAdminLayout({
       >
         <Sidebar collapsible="icon" className="border-r-0">
           <SidebarHeader className="px-4 py-6 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-4">
-            <h1 className="text-2xl font-bold leading-none text-sidebar-foreground group-data-[collapsible=icon]:hidden">
-              {PLATFORM_NAME}
-            </h1>
+            <div className="flex items-center gap-3 group-data-[collapsible=icon]:gap-0">
+              <img
+                src="/logo/icon.png"
+                alt="TVET MEMO"
+                className="size-8 shrink-0"
+              />
+              <h1 className="text-2xl font-bold leading-none text-sidebar-foreground group-data-[collapsible=icon]:hidden">
+                {PLATFORM_NAME}
+              </h1>
+            </div>
           </SidebarHeader>
 
           <SidebarContent>
@@ -191,7 +198,10 @@ export default function SuperAdminLayout({
           <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-card px-4 shadow-sm">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4!" />
-            <h2 className="text-lg font-semibold text-primary">{PLATFORM_NAME}</h2>
+            <div className="flex items-center gap-2">
+              <img src="/logo/icon.png" alt="" className="size-6" />
+              <h2 className="text-lg font-semibold text-primary">{PLATFORM_NAME}</h2>
+            </div>
 
             <div className="ml-auto flex items-center gap-2">
               <Button

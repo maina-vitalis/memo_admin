@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/input-group";
 import { Spinner } from "@/components/ui/spinner";
 
-const PLATFORM_NAME = "NostalQic";
+const PLATFORM_NAME = "TVET MEMO";
 
 type AccountSetupFormProps = {
   token: string;
@@ -90,6 +90,11 @@ export function AccountSetupForm({ token, details }: AccountSetupFormProps) {
       <CardContent className="pt-8">
         {/* Header */}
         <div className="mb-6 flex flex-col items-center text-center">
+          <img
+            src="/logo/icon.png"
+            alt="TVET MEMO"
+            className="mb-3 size-12"
+          />
           <h1 className="mb-3 text-[32px] leading-10 font-semibold tracking-tight text-primary-container">
             {PLATFORM_NAME}
           </h1>
