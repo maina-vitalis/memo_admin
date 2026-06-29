@@ -3,7 +3,7 @@
 import type { Control, FieldErrors, UseFormRegister } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import type { ProvisionTenantFormValues } from "@/features/super-admin/provisioning/schemas/provision-tenant.schema";
-import { FormField } from "@/features/super-admin/provisioning/components/form-field";
+import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import {
   Select,

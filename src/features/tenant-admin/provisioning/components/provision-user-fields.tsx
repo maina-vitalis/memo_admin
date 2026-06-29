@@ -5,8 +5,8 @@ import { Controller } from "react-hook-form";
 import type { ProvisionUserFormValues } from "@/features/tenant-admin/provisioning/schemas/provision-user.schema";
 import type { Role } from "@/features/tenant-admin/provisioning/api/get-roles";
 import type { Department } from "@/features/tenant-admin/provisioning/api/get-departments";
+import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -32,59 +32,54 @@ export function ProvisionUserFields({
 }: ProvisionUserFieldsProps) {
   return (
     <div className="grid gap-6 sm:grid-cols-2">
-      <div className="space-y-2">
-        <Label htmlFor="firstName">
-          First name <span className="text-destructive">*</span>
-        </Label>
+      <FormField
+        label="First name"
+        error={errors.firstName}
+        htmlFor="firstName"
+      >
         <Input
           id="firstName"
           placeholder="e.g. John"
           aria-invalid={!!errors.firstName}
           {...register("firstName")}
         />
-        {errors.firstName && (
-          <p className="text-sm text-destructive">{errors.firstName.message}</p>
-        )}
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
-        <Label htmlFor="lastName">
-          Last name <span className="text-destructive">*</span>
-        </Label>
+      <FormField
+        label="Last name"
+        error={errors.lastName}
+        htmlFor="lastName"
+      >
         <Input
           id="lastName"
           placeholder="e.g. Doe"
           aria-invalid={!!errors.lastName}
           {...register("lastName")}
         />
-        {errors.lastName && (
-          <p className="text-sm text-destructive">{errors.lastName.message}</p>
-        )}
+      </FormField>
+
+      <div className="sm:col-span-2">
+        <FormField
+          label="Email address"
+          description="Login credentials will be sent to this email."
+          error={errors.email}
+          htmlFor="email"
+        >
+          <Input
+            id="email"
+            type="email"
+            placeholder="user@institution.ac.ke"
+            aria-invalid={!!errors.email}
+            {...register("email")}
+          />
+        </FormField>
       </div>
 
-      <div className="space-y-2 sm:col-span-2">
-        <Label htmlFor="email">
-          Email address <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="user@institution.ac.ke"
-          aria-invalid={!!errors.email}
-          {...register("email")}
-        />
-        {errors.email && (
-          <p className="text-sm text-destructive">{errors.email.message}</p>
-        )}
-        <p className="text-sm text-muted-foreground">
-          Login credentials will be sent to this email.
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="roleId">
-          Role <span className="text-destructive">*</span>
-        </Label>
+      <FormField
+        label="Role"
+        description="Determines permissions and access level."
+        error={errors.roleId}
+      >
         <Controller
           name="roleId"
           control={control}
@@ -113,13 +108,13 @@ export function ProvisionUserFields({
             </Select>
           )}
         />
-        {errors.roleId && (
-          <p className="text-sm text-destructive">{errors.roleId.message}</p>
-        )}
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
-        <Label htmlFor="departmentId">Department (optional)</Label>
+      <FormField
+        label="Department"
+        description="Optional. Used for organization and reporting."
+        error={errors.departmentId}
+      >
         <Controller
           name="departmentId"
           control={control}
@@ -147,26 +142,34 @@ export function ProvisionUserFields({
             </Select>
           )}
         />
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
-        <Label htmlFor="staffNumber">Staff number (optional)</Label>
+      <FormField
+        label="Staff number"
+        description="Optional internal identifier."
+        error={errors.staffNumber}
+        htmlFor="staffNumber"
+      >
         <Input
           id="staffNumber"
           placeholder="e.g. STF-001"
           {...register("staffNumber")}
         />
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
-        <Label htmlFor="phoneNumber">Phone number (optional)</Label>
+      <FormField
+        label="Phone number"
+        description="Optional contact number."
+        error={errors.phoneNumber}
+        htmlFor="phoneNumber"
+      >
         <Input
           id="phoneNumber"
           type="tel"
           placeholder="e.g. +254712345678"
           {...register("phoneNumber")}
         />
-      </div>
+      </FormField>
     </div>
   );
 }

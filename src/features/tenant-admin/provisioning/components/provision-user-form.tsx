@@ -22,6 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { FieldGroup, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
 
 export function ProvisionUserForm() {
@@ -62,65 +63,69 @@ export function ProvisionUserForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="max-w-3xl">
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle>User details</CardTitle>
-          <CardDescription>
-            Create a new user account. Login credentials will be sent via email.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-6">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Spinner />
-              <span className="ml-2 text-sm text-muted-foreground">
-                Loading form data...
-              </span>
-            </div>
-          ) : (
-            <ProvisionUserFields
-              control={control}
-              register={register}
-              errors={errors}
-              roles={roles ?? []}
-              departments={departments ?? []}
-            />
-          )}
-        </CardContent>
-        <CardFooter className="flex flex-col items-stretch gap-4 border-t sm:flex-row sm:items-center sm:justify-between">
-          {errors.root?.message ? (
-            <p className="text-sm text-destructive">{errors.root.message}</p>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              A temporary password will be generated and sent via email.
-            </p>
-          )}
-
-          <div className="flex gap-3 sm:ml-auto">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.push("/admin/directory")}
-              disabled={provisionMutation.isPending || isLoading}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={provisionMutation.isPending || isLoading}
-            >
-              {provisionMutation.isPending ? (
-                <>
+      <FieldSet>
+        <FieldGroup>
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle>User details</CardTitle>
+              <CardDescription>
+                Create a new user account. Login credentials will be sent via email.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
                   <Spinner />
-                  Provisioning...
-                </>
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    Loading form data...
+                  </span>
+                </div>
               ) : (
-                "Provision user"
+                <ProvisionUserFields
+                  control={control}
+                  register={register}
+                  errors={errors}
+                  roles={roles ?? []}
+                  departments={departments ?? []}
+                />
               )}
-            </Button>
-          </div>
-        </CardFooter>
-      </Card>
+            </CardContent>
+            <CardFooter className="flex flex-col items-stretch gap-4 border-t sm:flex-row sm:items-center sm:justify-between">
+              {errors.root?.message ? (
+                <p className="text-sm text-destructive">{errors.root.message}</p>
+              ) : (
+                <FieldLegend className="mb-0 text-sm font-normal text-muted-foreground">
+                  A temporary password will be generated and sent via email.
+                </FieldLegend>
+              )}
+
+              <div className="flex gap-3 sm:ml-auto">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push("/admin/directory")}
+                  disabled={provisionMutation.isPending || isLoading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={provisionMutation.isPending || isLoading}
+                >
+                  {provisionMutation.isPending ? (
+                    <>
+                      <Spinner />
+                      Provisioning...
+                    </>
+                  ) : (
+                    "Provision user"
+                  )}
+                </Button>
+              </div>
+            </CardFooter>
+          </Card>
+        </FieldGroup>
+      </FieldSet>
     </form>
   );
 }

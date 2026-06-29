@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 export function ProvisionUserPage() {
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-4xl space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/admin/directory">
