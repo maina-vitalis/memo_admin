@@ -84,7 +84,7 @@ export function ProvisionUserFields({
           name="roleId"
           control={control}
           render={({ field }) => (
-            <Select onValueChange={field.onChange} value={field.value}>
+            <Select onValueChange={field.onChange} value={field.value || ""}>
               <SelectTrigger
                 id="roleId"
                 aria-invalid={!!errors.roleId}
@@ -121,7 +121,7 @@ export function ProvisionUserFields({
           render={({ field }) => (
             <Select
               onValueChange={field.onChange}
-              value={field.value || undefined}
+              value={field.value || ""}
             >
               <SelectTrigger id="departmentId" className="w-full">
                 <SelectValue placeholder="Select a department" />
@@ -134,7 +134,7 @@ export function ProvisionUserFields({
                 ) : (
                   departments.map((dept) => (
                     <SelectItem key={dept.id} value={dept.id}>
-                      {dept.name} ({dept.code})
+                      {dept.code ? `${dept.name} (${dept.code})` : dept.name}
                     </SelectItem>
                   ))
                 )}
