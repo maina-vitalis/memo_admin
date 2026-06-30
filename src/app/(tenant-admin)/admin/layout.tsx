@@ -167,7 +167,13 @@ export default function TenantAdminLayout({
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mr-2 h-4!" />
               <div className="flex items-center gap-2">
-                <Image src="/logo/icon.png" alt="" width={24} height={24} className="size-6" />
+                <Image
+                  src="/logo/icon.png"
+                  alt=""
+                  width={24}
+                  height={24}
+                  className="size-6"
+                />
                 <h2 className="text-lg font-semibold text-primary">
                   {PLATFORM_NAME}
                 </h2>
