@@ -1,8 +1,11 @@
-import { parseApiResponse } from "@/features/auth/api/parse-api-response";
+/**
+ * [REFRESH TOKENS + AXIOS] Updated to use centralized axios client (like tenant).
+ * Returns refreshToken and lets auth-storage handle persistence.
+ */
+import adminAxios from "@/features/auth/api/axios-auth-client";
 import type { SuperAdminLoginResult } from "@/features/auth/types";
-import { superAdminConfig } from "@/features/super-admin/shared/config";
-
-type SuperAdminLoginResponse = Omit<SuperAdminLoginResult, "role">;
+import { applyLoginResult } from "@/features/auth/auth-storage";
+import { getOrCreateDeviceId } from "@/features/auth/device"; // [REFRESH TOKENS]
 
 export class SuperAdminLoginError extends Error {
   constructor(
@@ -14,43 +17,29 @@ export class SuperAdminLoginError extends Error {
   }
 }
 
-async function requestSuperAdminLogin(
-  email: string,
-  password: string,
-): Promise<SuperAdminLoginResponse> {
-  const response = await fetch(
-    `${superAdminConfig.apiBaseUrl}/superadmin/login`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: email.trim().toLowerCase(),
-        password,
-      }),
-    },
-  );
-
-  try {
-    return await parseApiResponse<SuperAdminLoginResponse>(
-      response,
-      "Invalid credentials",
-    );
-  } catch (error) {
-    throw new SuperAdminLoginError(
-      error instanceof Error ? error.message : "Invalid credentials",
-      response.status,
-    );
-  }
-}
-
 export async function loginSuperAdmin(
   email: string,
   password: string,
 ): Promise<SuperAdminLoginResult> {
-  const result = await requestSuperAdminLogin(email, password);
+  try {
+    const { data } = await adminAxios.post("/superadmin/login", {
+      email: email.trim().toLowerCase(),
+      password,
+      deviceType: "web",
+      deviceId: getOrCreateDeviceId(),
+    });
 
-  return {
-    role: "super-admin",
-    ...result,
-  };
+    const result: SuperAdminLoginResult = {
+      role: "super-admin",
+      ...data,
+    };
+
+    applyLoginResult(result);
+    return result;
+  } catch (error: any) {
+    throw new SuperAdminLoginError(
+      error?.response?.data?.message || error?.message || "Invalid credentials",
+      error?.response?.status,
+    );
+  }
 }

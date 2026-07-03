@@ -46,6 +46,7 @@ function applyLoginResult(state: AuthState, result: LoginResult) {
     state.role = "super-admin";
     state.superAdminToken = result.accessToken;
     state.superAdmin = result.superAdmin;
+    // [REFRESH TOKENS] store refresh separately for now (see auth-storage)
     state.tenantToken = null;
     state.tenantSubdomain = null;
     state.tenantUser = null;
@@ -60,6 +61,8 @@ function applyLoginResult(state: AuthState, result: LoginResult) {
   state.institution = result.institution;
   state.superAdminToken = null;
   state.superAdmin = null;
+
+  // refreshToken is handled by auth-storage helpers + axios client
 }
 
 export const login = createAsyncThunk<LoginResult, LoginInput, { rejectValue: string }>(
@@ -96,6 +99,11 @@ const authSlice = createSlice({
       state.hydrated = true;
     },
     logout(state) {
+      // [REFRESH TOKENS] fire-and-forget server revocation using the refresh token
+      import("../auth-storage").then(({ serverLogout }) => {
+        serverLogout().catch(() => {});
+      });
+
       clearAuthStorage();
       Object.assign(state, { ...initialState, hydrated: true });
     },

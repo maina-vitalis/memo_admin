@@ -8,8 +8,9 @@ export type LoginInput = {
 export type SuperAdminLoginResult = {
   role: "super-admin";
   accessToken: string;
+  refreshToken: string; // [REFRESH TOKENS] NEW
   tokenType: "Bearer";
-  expiresIn: string;
+  expiresIn: number; // seconds
   superAdmin: {
     id: string;
     email: string;
@@ -21,8 +22,9 @@ export type SuperAdminLoginResult = {
 export type TenantLoginResult = {
   role: "tenant-admin";
   accessToken: string;
+  refreshToken: string; // [REFRESH TOKENS] NEW
   tokenType: "Bearer";
-  expiresIn: string;
+  expiresIn: number; // seconds (number) for short access token
   user: {
     id: string;
     email: string;

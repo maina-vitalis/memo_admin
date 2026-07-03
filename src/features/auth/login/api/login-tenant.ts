@@ -1,8 +1,12 @@
-import { parseApiResponse } from "@/features/auth/api/parse-api-response";
+/**
+ * [REFRESH TOKENS + AXIOS MIGRATION]
+ * Example of updated login using axios-auth-client.
+ * Other calls should migrate to the new client over time.
+ */
+import adminAxios from "@/features/auth/api/axios-auth-client";
 import type { TenantLoginResult } from "@/features/auth/types";
-import { tenantApiConfig } from "@/features/tenant-admin/shared/api/client";
-
-type TenantLoginResponse = Omit<TenantLoginResult, "role">;
+import { applyLoginResult } from "@/features/auth/auth-storage";
+import { getOrCreateDeviceId } from "@/features/auth/device"; // [REFRESH TOKENS] stable deviceId for web too
 
 export class TenantLoginError extends Error {
   constructor(
@@ -14,35 +18,6 @@ export class TenantLoginError extends Error {
   }
 }
 
-async function requestTenantLogin(
-  subdomain: string,
-  email: string,
-  password: string,
-): Promise<TenantLoginResponse> {
-  const response = await fetch(`${tenantApiConfig.baseUrl}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      subdomain: subdomain.trim().toLowerCase(),
-      email: email.trim().toLowerCase(),
-      password,
-      deviceType: "web",
-    }),
-  });
-
-  try {
-    return await parseApiResponse<TenantLoginResponse>(
-      response,
-      "Invalid credentials",
-    );
-  } catch (error) {
-    throw new TenantLoginError(
-      error instanceof Error ? error.message : "Invalid credentials",
-      response.status,
-    );
-  }
-}
-
 export async function loginTenantAdmin(
   subdomain: string,
   email: string,
@@ -50,14 +25,26 @@ export async function loginTenantAdmin(
 ): Promise<TenantLoginResult> {
   const normalizedSubdomain = subdomain.trim().toLowerCase();
 
-  const result = await requestTenantLogin(
-    normalizedSubdomain,
-    email,
-    password,
-  );
+  try {
+    const { data } = await adminAxios.post("/auth/login", {
+      subdomain: normalizedSubdomain,
+      email: email.trim().toLowerCase(),
+      password,
+      deviceType: "web",
+      deviceId: getOrCreateDeviceId(), // [REFRESH TOKENS]
+    });
 
-  return {
-    role: "tenant-admin",
-    ...result,
-  };
+    const result: TenantLoginResult = {
+      role: "tenant-admin",
+      ...data,
+    };
+
+    applyLoginResult(result);
+    return result;
+  } catch (error: any) {
+    throw new TenantLoginError(
+      error?.response?.data?.message || error?.message || "Invalid credentials",
+      error?.response?.status,
+    );
+  }
 }

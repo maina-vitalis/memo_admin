@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircleIcon, EyeIcon, EyeOffIcon, LockIcon } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -67,10 +68,9 @@ export function AccountSetupForm({ token, details }: AccountSetupFormProps) {
         token,
         password: values.password,
       });
+      
 
-      toast.success(
-        `Welcome, ${details.adminName}! Your account is ready.`,
-      );
+      toast.success(`Welcome, ${details.adminName}! Your account is ready.`);
 
       // The backend auto-logs in the user — redirect straight to the dashboard.
       router.replace(getPostLoginPath(result.role));
@@ -86,14 +86,17 @@ export function AccountSetupForm({ token, details }: AccountSetupFormProps) {
   }
 
   return (
-    <Card className="w-full max-w-[440px] rounded-xl border-border/80 shadow-[0px_8px_24px_-4px_rgba(0,0,0,0.08),0px_2px_4px_-2px_rgba(0,0,0,0.04)]">
+    <Card className="w-full max-w-110 rounded-xl border-border/80 shadow-[0px_8px_24px_-4px_rgba(0,0,0,0.08),0px_2px_4px_-2px_rgba(0,0,0,0.04)]">
       <CardContent className="pt-8">
         {/* Header */}
         <div className="mb-6 flex flex-col items-center text-center">
-          <img
+          <Image
             src="/logo/icon.png"
             alt="TVET MEMO"
+            width={48}
+            height={48}
             className="mb-3 size-12"
+            priority
           />
           <h1 className="mb-3 text-[32px] leading-10 font-semibold tracking-tight text-primary-container">
             {PLATFORM_NAME}
@@ -118,10 +121,11 @@ export function AccountSetupForm({ token, details }: AccountSetupFormProps) {
           />
           <div className="min-w-0">
             <p className="font-medium text-foreground">{details.adminName}</p>
-            <p className="truncate text-muted-foreground">{details.adminEmail}</p>
+            <p className="truncate text-muted-foreground">
+              {details.adminEmail}
+            </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Subdomain:{" "}
-              <code className="font-mono">{details.subdomain}</code>
+              Subdomain: <code className="font-mono">{details.subdomain}</code>
             </p>
           </div>
         </div>
@@ -152,7 +156,9 @@ export function AccountSetupForm({ token, details }: AccountSetupFormProps) {
                     type="button"
                     size="icon-sm"
                     variant="ghost"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                     onClick={() => setShowPassword((v) => !v)}
                   >
                     {showPassword ? <EyeOffIcon /> : <EyeIcon />}
