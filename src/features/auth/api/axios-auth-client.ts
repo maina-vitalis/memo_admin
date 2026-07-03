@@ -141,7 +141,7 @@ adminAxios.interceptors.response.use(
 
           onRefreshed(newAccess);
 
-          original.headers = original.headers || {};
+          original.headers = original.headers || ({} as any);
           (original.headers as any).Authorization = `Bearer ${newAccess}`;
           return adminAxios(original);
         } catch (refreshErr) {
@@ -159,7 +159,7 @@ adminAxios.interceptors.response.use(
 
       return new Promise((resolve) => {
         subscribeTokenRefresh((newToken) => {
-          if (!original.headers) original.headers = {};
+          if (!original.headers) original.headers = {} as any;
           (original.headers as any).Authorization = `Bearer ${newToken}`;
           resolve(adminAxios(original));
         });
