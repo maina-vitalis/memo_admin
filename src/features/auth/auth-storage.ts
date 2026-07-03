@@ -11,7 +11,7 @@
  * All functions are safe for SSR (they check for window).
  */
 
-import { store } from "@/store/store";
+import { getStore } from "@/store/store";
 import {
   selectAccessToken,
   selectTenantAccessToken,
@@ -30,7 +30,7 @@ export {
 
 export function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
-  const state = store.getState();
+  const state = getStore().getState();
   return selectAccessToken(state) ?? null;
 }
 
@@ -54,7 +54,7 @@ export function setRefreshToken(token: string) {
 
 export function applyLoginResult(result: LoginResult) {
   // This keeps the whole redux + persistence happy
-  store.dispatch(applyAuthSession(result));
+  getStore().dispatch(applyAuthSession(result));
   if ("refreshToken" in result && result.refreshToken) {
     setRefreshToken(result.refreshToken);
   }

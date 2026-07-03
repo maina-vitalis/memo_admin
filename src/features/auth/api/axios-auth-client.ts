@@ -26,7 +26,7 @@ import {
   setRefreshToken,
   clearAuth,
 } from "@/features/auth/auth-storage";
-import { store } from "@/store/store";
+import { getStore } from "@/store/store";
 import { logout } from "@/features/auth/store/auth-slice";
 import { getSecondsUntilExpiry } from "@/features/auth/jwt"; // [PROACTIVE REFRESH]
 
@@ -112,7 +112,7 @@ adminAxios.interceptors.response.use(
 
     if (status === 401 && !original._retry) {
       if (original.url?.includes("/auth/refresh")) {
-        store.dispatch(logout());
+        getStore().dispatch(logout());
         clearAuth();
         if (typeof window !== "undefined") {
           window.location.href = "/login";
@@ -146,7 +146,7 @@ adminAxios.interceptors.response.use(
           return adminAxios(original);
         } catch (refreshErr) {
           onRefreshFailed();
-          store.dispatch(logout());
+          getStore().dispatch(logout());
           clearAuth();
           if (typeof window !== "undefined") {
             window.location.href = "/login";
