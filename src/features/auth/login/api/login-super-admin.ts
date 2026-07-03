@@ -31,11 +31,12 @@ export async function loginSuperAdmin(
 
     const result: SuperAdminLoginResult = {
       role: "super-admin",
-      ...data,
+      ...data.data,
     };
 
     applyLoginResult(result);
     return result;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     throw new SuperAdminLoginError(
       error?.response?.data?.message || error?.message || "Invalid credentials",

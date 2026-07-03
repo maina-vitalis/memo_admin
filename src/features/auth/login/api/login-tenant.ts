@@ -36,11 +36,12 @@ export async function loginTenantAdmin(
 
     const result: TenantLoginResult = {
       role: "tenant-admin",
-      ...data,
+      ...data.data,
     };
 
     applyLoginResult(result);
     return result;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     throw new TenantLoginError(
       error?.response?.data?.message || error?.message || "Invalid credentials",

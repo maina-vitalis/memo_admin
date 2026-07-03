@@ -76,7 +76,9 @@ export async function serverLogout() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(getAccessToken() ? { Authorization: `Bearer ${getAccessToken()}` } : {}),
+        ...(getAccessToken()
+          ? { Authorization: `Bearer ${getAccessToken()}` }
+          : {}),
       },
       body: refresh ? JSON.stringify({ refreshToken: refresh }) : undefined,
     });

@@ -5,7 +5,6 @@ const ROLE_KEY = "memo_auth_role";
 const SUPER_ADMIN_TOKEN_KEY = "memo_super_admin_access_token";
 const TENANT_TOKEN_KEY = "memo_tenant_access_token";
 const TENANT_SUBDOMAIN_KEY = "memo_tenant_subdomain";
-const REFRESH_TOKEN_KEY = "memo_refresh_token"; // [REFRESH TOKENS] dedicated key for the revocable credential
 const SUPER_ADMIN_PROFILE_KEY = "memo_super_admin_profile";
 const TENANT_PROFILE_KEY = "memo_tenant_profile";
 const INSTITUTION_PROFILE_KEY = "memo_institution_profile";

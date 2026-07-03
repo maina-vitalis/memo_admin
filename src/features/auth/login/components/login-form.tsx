@@ -12,7 +12,6 @@ import {
   type LoginFormValues,
 } from "@/features/auth/login/schemas/login.schema";
 import { getPostLoginPath } from "@/features/auth/types";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Field,

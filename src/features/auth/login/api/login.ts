@@ -35,7 +35,9 @@ export async function login(input: LoginInput): Promise<LoginResult> {
     return await loginTenantAdmin(subdomain, email, password);
   } catch (tenantError) {
     throw new LoginError(
-      tenantError instanceof Error ? tenantError.message : "Invalid credentials",
+      tenantError instanceof Error
+        ? tenantError.message
+        : "Invalid credentials",
     );
   }
 }

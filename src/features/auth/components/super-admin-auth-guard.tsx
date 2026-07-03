@@ -30,6 +30,7 @@ export function SuperAdminAuthGuard({ children }: SuperAdminAuthGuardProps) {
     }
 
     if (!isAuthenticated) {
+      console.log("redirected");
       router.replace("/login");
     }
   }, [hydrated, isAuthenticated, role, router]);

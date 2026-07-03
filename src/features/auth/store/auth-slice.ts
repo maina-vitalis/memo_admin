@@ -1,4 +1,8 @@
-import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  createAsyncThunk,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 import { login as loginRequest } from "@/features/auth/login/api/login";
 import {
   clearAuthStorage,
@@ -42,6 +46,7 @@ const initialState: AuthState = {
 };
 
 function applyLoginResult(state: AuthState, result: LoginResult) {
+  console.log(result, "apply login result");
   if (result.role === "super-admin") {
     state.role = "super-admin";
     state.superAdminToken = result.accessToken;
@@ -65,18 +70,19 @@ function applyLoginResult(state: AuthState, result: LoginResult) {
   // refreshToken is handled by auth-storage helpers + axios client
 }
 
-export const login = createAsyncThunk<LoginResult, LoginInput, { rejectValue: string }>(
-  "auth/login",
-  async (input, { rejectWithValue }) => {
-    try {
-      return await loginRequest(input);
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : "Failed to sign in",
-      );
-    }
-  },
-);
+export const login = createAsyncThunk<
+  LoginResult,
+  LoginInput,
+  { rejectValue: string }
+>("auth/login", async (input, { rejectWithValue }) => {
+  try {
+    return await loginRequest(input);
+  } catch (error) {
+    return rejectWithValue(
+      error instanceof Error ? error.message : "Failed to sign in",
+    );
+  }
+});
 
 const authSlice = createSlice({
   name: "auth",
@@ -143,7 +149,12 @@ const authSlice = createSlice({
   },
 });
 
-export const { hydrateAuth, logout, clearAuthError, applyAuthSession, setTenantSubdomain } =
-  authSlice.actions;
+export const {
+  hydrateAuth,
+  logout,
+  clearAuthError,
+  applyAuthSession,
+  setTenantSubdomain,
+} = authSlice.actions;
 
 export const authReducer = authSlice.reducer;
