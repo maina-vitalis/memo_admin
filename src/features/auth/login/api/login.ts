@@ -36,7 +36,7 @@ export async function login(input: LoginInput): Promise<LoginResult> {
   const email = input.email.trim().toLowerCase();
 
   try {
-    const { data } = await adminAxios.post<LoginApiResponse>("/auth/login", {
+    const { data: body } = await adminAxios.post<{ success: boolean; data: LoginApiResponse } | LoginApiResponse>("/auth/login", {
       email,
       password: input.password,
       deviceType: "web",
@@ -45,6 +45,9 @@ export async function login(input: LoginInput): Promise<LoginResult> {
           ? localStorage.getItem("memo_device_id") ?? undefined
           : undefined,
     });
+
+    // Backend wraps responses as { success: true, data: payload }
+    const data = (body as { success: boolean; data: LoginApiResponse }).data ?? (body as LoginApiResponse);
 
     const result: LoginResult = {
       accessToken: data.accessToken,
@@ -65,7 +68,10 @@ export async function login(input: LoginInput): Promise<LoginResult> {
 
     applyLoginResult(result);
     return result;
-  } catch {
-    throw new LoginError("Invalid credentials");
+  } catch (err) {
+    if (err instanceof LoginError) throw err;
+    const message =
+      err instanceof Error ? err.message : "Invalid credentials";
+    throw new LoginError(message);
   }
 }

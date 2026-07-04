@@ -31,6 +31,8 @@ export function setRefreshToken(token: string) {
 }
 
 export function applyLoginResult(result: LoginResult) {
+
+  console.log("Applying login result:", result);
   getStore().dispatch(applyAuthSession(result));
   if (result.refreshToken) {
     setRefreshToken(result.refreshToken);
