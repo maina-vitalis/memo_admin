@@ -16,7 +16,7 @@ function decodeJwtPayload(token: string): { role?: Role; institutionId?: string 
   }
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (
@@ -35,7 +35,7 @@ export function middleware(request: NextRequest) {
     request.headers.get("authorization")?.replace("Bearer ", "") ??
     null;
 
-  // Client-side auth uses localStorage; middleware is a best-effort redirect
+  // Client-side auth uses localStorage; proxy is a best-effort redirect
   // when a cookie is present (optional future: set httpOnly cookie on login).
   if (!token) {
     if (pathname.startsWith("/super-admin") || pathname.startsWith("/admin")) {
