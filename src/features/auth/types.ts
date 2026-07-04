@@ -1,46 +1,43 @@
-export type AuthRole = "super-admin" | "tenant-admin";
+import { Role } from "@/lib/rbac/role.enum";
 
 export type LoginInput = {
   email: string;
   password: string;
 };
 
-export type SuperAdminLoginResult = {
-  role: "super-admin";
-  accessToken: string;
-  refreshToken: string; // [REFRESH TOKENS] NEW
-  tokenType: "Bearer";
-  expiresIn: number; // seconds
-  superAdmin: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-  };
+export type AuthUser = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: Role;
+  institutionId: string | null;
 };
 
-export type TenantLoginResult = {
-  role: "tenant-admin";
-  accessToken: string;
-  refreshToken: string; // [REFRESH TOKENS] NEW
-  tokenType: "Bearer";
-  expiresIn: number; // seconds (number) for short access token
-  user: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-  };
-  institution: {
-    id: string;
-    name: string;
-    subdomain: string;
-  };
-  mustChangePassword: boolean;
+export type InstitutionSummary = {
+  id: string;
+  name: string;
+  subdomain: string;
 };
 
-export type LoginResult = SuperAdminLoginResult | TenantLoginResult;
+export type LoginResult = {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: "Bearer";
+  expiresIn: number;
+  user: AuthUser;
+  institution?: InstitutionSummary | null;
+  mustChangePassword?: boolean;
+};
 
-export function getPostLoginPath(role: AuthRole) {
-  return role === "super-admin" ? "/super-admin" : "/admin";
+export function getPostLoginPath(role: Role): string {
+  return role === Role.SUPER_ADMIN ? "/super-admin" : "/admin";
+}
+
+export function isSuperAdmin(role: Role | null): boolean {
+  return role === Role.SUPER_ADMIN;
+}
+
+export function isInstitutionPortalRole(role: Role | null): boolean {
+  return role !== null && role !== Role.SUPER_ADMIN;
 }

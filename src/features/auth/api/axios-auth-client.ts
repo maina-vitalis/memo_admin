@@ -27,7 +27,10 @@ import {
   clearAuth,
 } from "@/features/auth/auth-storage";
 import { getStore } from "@/store/store";
-import { logout } from "@/features/auth/store/auth-slice";
+import {
+  logout,
+  refreshAccessToken,
+} from "@/features/auth/store/auth-slice";
 import { getSecondsUntilExpiry } from "@/features/auth/jwt"; // [PROACTIVE REFRESH]
 
 const adminAxios = axios.create({
@@ -81,11 +84,16 @@ adminAxios.interceptors.request.use(
       if (refreshToken) {
         try {
           const { data } = await rawAxios.post("/auth/refresh", { refreshToken });
-          const newAccess = data.accessToken;
-          const newRefresh = data.refreshToken;
+          // Backend wraps all responses as { success: true, data: realPayload }
+          const payload = data?.data ?? data;
+          const newAccess = payload.accessToken;
+          const newRefresh = payload.refreshToken;
 
           setAccessToken(newAccess);
           if (newRefresh) setRefreshToken(newRefresh);
+
+          // Update redux source of truth (and persisted storage) so role-aware getters pick it up
+          getStore().dispatch(refreshAccessToken(newAccess));
 
           token = newAccess;
         } catch {
@@ -133,11 +141,16 @@ adminAxios.interceptors.response.use(
             refreshToken,
           });
 
-          const newAccess = data.accessToken;
-          const newRefresh = data.refreshToken;
+          // Backend wraps all responses as { success: true, data: realPayload }
+          const payload = data?.data ?? data;
+          const newAccess = payload.accessToken;
+          const newRefresh = payload.refreshToken;
 
           setAccessToken(newAccess);
           if (newRefresh) setRefreshToken(newRefresh);
+
+          // Persist the refreshed token into the correct role slot (super vs tenant)
+          getStore().dispatch(refreshAccessToken(newAccess));
 
           onRefreshed(newAccess);
 
@@ -170,4 +183,5 @@ adminAxios.interceptors.response.use(
   },
 );
 
+export { adminAxios };
 export default adminAxios;

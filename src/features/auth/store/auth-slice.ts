@@ -9,36 +9,34 @@ import {
   loadAuthFromStorage,
   saveAuthToStorage,
 } from "@/features/auth/store/auth-persistence";
-import type {
-  AuthRole,
-  LoginInput,
-  LoginResult,
-  SuperAdminLoginResult,
-  TenantLoginResult,
-} from "@/features/auth/types";
+import type { AuthUser, InstitutionSummary, LoginInput, LoginResult } from "@/features/auth/types";
+import { Role } from "@/lib/rbac/role.enum";
 
 export type AuthStatus = "idle" | "loading" | "authenticated" | "error";
 
+/** [AUTH] Unified auth state — single token, role from fixed enum. */
 export type AuthState = {
-  role: AuthRole | null;
-  superAdminToken: string | null;
-  tenantToken: string | null;
-  tenantSubdomain: string | null;
-  superAdmin: SuperAdminLoginResult["superAdmin"] | null;
-  tenantUser: TenantLoginResult["user"] | null;
-  institution: TenantLoginResult["institution"] | null;
+  id: string | null;
+  email: string | null;
+  role: Role | null;
+  institutionId: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  accessToken: string | null;
+  institution: InstitutionSummary | null;
   status: AuthStatus;
   error: string | null;
   hydrated: boolean;
 };
 
 const initialState: AuthState = {
+  id: null,
+  email: null,
   role: null,
-  superAdminToken: null,
-  tenantToken: null,
-  tenantSubdomain: null,
-  superAdmin: null,
-  tenantUser: null,
+  institutionId: null,
+  firstName: null,
+  lastName: null,
+  accessToken: null,
   institution: null,
   status: "idle",
   error: null,
@@ -46,28 +44,14 @@ const initialState: AuthState = {
 };
 
 function applyLoginResult(state: AuthState, result: LoginResult) {
-  console.log(result, "apply login result");
-  if (result.role === "super-admin") {
-    state.role = "super-admin";
-    state.superAdminToken = result.accessToken;
-    state.superAdmin = result.superAdmin;
-    // [REFRESH TOKENS] store refresh separately for now (see auth-storage)
-    state.tenantToken = null;
-    state.tenantSubdomain = null;
-    state.tenantUser = null;
-    state.institution = null;
-    return;
-  }
-
-  state.role = "tenant-admin";
-  state.tenantToken = result.accessToken;
-  state.tenantSubdomain = result.institution.subdomain;
-  state.tenantUser = result.user;
-  state.institution = result.institution;
-  state.superAdminToken = null;
-  state.superAdmin = null;
-
-  // refreshToken is handled by auth-storage helpers + axios client
+  state.id = result.user.id;
+  state.email = result.user.email;
+  state.role = result.user.role;
+  state.institutionId = result.user.institutionId;
+  state.firstName = result.user.firstName;
+  state.lastName = result.user.lastName;
+  state.accessToken = result.accessToken;
+  state.institution = result.institution ?? null;
 }
 
 export const login = createAsyncThunk<
@@ -92,20 +76,13 @@ const authSlice = createSlice({
       const persisted = loadAuthFromStorage();
 
       if (persisted) {
-        state.role = persisted.role;
-        state.superAdminToken = persisted.superAdminToken;
-        state.tenantToken = persisted.tenantToken;
-        state.tenantSubdomain = persisted.tenantSubdomain;
-        state.superAdmin = persisted.superAdmin;
-        state.tenantUser = persisted.tenantUser;
-        state.institution = persisted.institution;
+        Object.assign(state, persisted);
         state.status = persisted.role ? "authenticated" : "idle";
       }
 
       state.hydrated = true;
     },
     logout(state) {
-      // [REFRESH TOKENS] fire-and-forget server revocation using the refresh token
       import("../auth-storage").then(({ serverLogout }) => {
         serverLogout().catch(() => {});
       });
@@ -125,8 +102,8 @@ const authSlice = createSlice({
       state.error = null;
       saveAuthToStorage(state);
     },
-    setTenantSubdomain(state, action: PayloadAction<string>) {
-      state.tenantSubdomain = action.payload;
+    refreshAccessToken(state, action: PayloadAction<string>) {
+      state.accessToken = action.payload;
       saveAuthToStorage(state);
     },
   },
@@ -154,7 +131,7 @@ export const {
   logout,
   clearAuthError,
   applyAuthSession,
-  setTenantSubdomain,
+  refreshAccessToken,
 } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;

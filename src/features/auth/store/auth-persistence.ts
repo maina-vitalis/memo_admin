@@ -1,28 +1,22 @@
-import type { AuthRole } from "@/features/auth/types";
+import { Role } from "@/lib/rbac/role.enum";
 import type { AuthState } from "@/features/auth/store/auth-slice";
 
-const ROLE_KEY = "memo_auth_role";
-const SUPER_ADMIN_TOKEN_KEY = "memo_super_admin_access_token";
-const TENANT_TOKEN_KEY = "memo_tenant_access_token";
-const TENANT_SUBDOMAIN_KEY = "memo_tenant_subdomain";
-const SUPER_ADMIN_PROFILE_KEY = "memo_super_admin_profile";
-const TENANT_PROFILE_KEY = "memo_tenant_profile";
-const INSTITUTION_PROFILE_KEY = "memo_institution_profile";
+const AUTH_KEY = "memo_auth";
 
 type PersistedAuthState = Pick<
   AuthState,
+  | "id"
+  | "email"
   | "role"
-  | "superAdminToken"
-  | "tenantToken"
-  | "tenantSubdomain"
-  | "superAdmin"
-  | "tenantUser"
+  | "institutionId"
+  | "firstName"
+  | "lastName"
+  | "accessToken"
   | "institution"
 >;
 
 function readJson<T>(value: string | null): T | null {
   if (!value) return null;
-
   try {
     return JSON.parse(value) as T;
   } catch {
@@ -33,101 +27,43 @@ function readJson<T>(value: string | null): T | null {
 export function loadAuthFromStorage(): PersistedAuthState | null {
   if (typeof window === "undefined") return null;
 
-  const role = localStorage.getItem(ROLE_KEY);
-  if (role !== "super-admin" && role !== "tenant-admin") {
-    return null;
-  }
+  const parsed = readJson<PersistedAuthState>(localStorage.getItem(AUTH_KEY));
+  if (!parsed?.accessToken || !parsed.role) return null;
+  if (!Object.values(Role).includes(parsed.role)) return null;
 
-  if (role === "super-admin") {
-    const superAdminToken = localStorage.getItem(SUPER_ADMIN_TOKEN_KEY);
-    if (!superAdminToken) return null;
-
-    return {
-      role,
-      superAdminToken,
-      tenantToken: null,
-      tenantSubdomain: null,
-      superAdmin: readJson(localStorage.getItem(SUPER_ADMIN_PROFILE_KEY)),
-      tenantUser: null,
-      institution: null,
-    };
-  }
-
-  const tenantToken = localStorage.getItem(TENANT_TOKEN_KEY);
-  const tenantSubdomain = localStorage.getItem(TENANT_SUBDOMAIN_KEY);
-  if (!tenantToken || !tenantSubdomain) return null;
-
-  return {
-    role,
-    superAdminToken: null,
-    tenantToken,
-    tenantSubdomain,
-    superAdmin: null,
-    tenantUser: readJson(localStorage.getItem(TENANT_PROFILE_KEY)),
-    institution: readJson(localStorage.getItem(INSTITUTION_PROFILE_KEY)),
-  };
+  return parsed;
 }
 
 export function saveAuthToStorage(state: PersistedAuthState) {
   if (typeof window === "undefined") return;
 
-  if (!state.role) {
+  if (!state.role || !state.accessToken) {
     clearAuthStorage();
     return;
   }
 
-  localStorage.setItem(ROLE_KEY, state.role);
-
-  if (state.role === "super-admin") {
-    localStorage.setItem(SUPER_ADMIN_TOKEN_KEY, state.superAdminToken ?? "");
-    localStorage.removeItem(TENANT_TOKEN_KEY);
-    localStorage.removeItem(TENANT_SUBDOMAIN_KEY);
-    localStorage.removeItem(TENANT_PROFILE_KEY);
-    localStorage.removeItem(INSTITUTION_PROFILE_KEY);
-
-    if (state.superAdmin) {
-      localStorage.setItem(
-        SUPER_ADMIN_PROFILE_KEY,
-        JSON.stringify(state.superAdmin),
-      );
-    } else {
-      localStorage.removeItem(SUPER_ADMIN_PROFILE_KEY);
-    }
-
-    return;
-  }
-
-  localStorage.setItem(TENANT_TOKEN_KEY, state.tenantToken ?? "");
-  localStorage.setItem(TENANT_SUBDOMAIN_KEY, state.tenantSubdomain ?? "");
-  localStorage.removeItem(SUPER_ADMIN_TOKEN_KEY);
-  localStorage.removeItem(SUPER_ADMIN_PROFILE_KEY);
-
-  if (state.tenantUser) {
-    localStorage.setItem(TENANT_PROFILE_KEY, JSON.stringify(state.tenantUser));
-  } else {
-    localStorage.removeItem(TENANT_PROFILE_KEY);
-  }
-
-  if (state.institution) {
-    localStorage.setItem(
-      INSTITUTION_PROFILE_KEY,
-      JSON.stringify(state.institution),
-    );
-  } else {
-    localStorage.removeItem(INSTITUTION_PROFILE_KEY);
-  }
+  localStorage.setItem(AUTH_KEY, JSON.stringify({
+    id: state.id,
+    email: state.email,
+    role: state.role,
+    institutionId: state.institutionId,
+    firstName: state.firstName,
+    lastName: state.lastName,
+    accessToken: state.accessToken,
+    institution: state.institution,
+  }));
 }
 
 export function clearAuthStorage() {
   if (typeof window === "undefined") return;
-
-  localStorage.removeItem(ROLE_KEY);
-  localStorage.removeItem(SUPER_ADMIN_TOKEN_KEY);
-  localStorage.removeItem(TENANT_TOKEN_KEY);
-  localStorage.removeItem(TENANT_SUBDOMAIN_KEY);
-  localStorage.removeItem(SUPER_ADMIN_PROFILE_KEY);
-  localStorage.removeItem(TENANT_PROFILE_KEY);
-  localStorage.removeItem(INSTITUTION_PROFILE_KEY);
+  localStorage.removeItem(AUTH_KEY);
+  localStorage.removeItem("memo_refresh_token");
+  // Clear legacy keys from old dual-auth system
+  localStorage.removeItem("memo_auth_role");
+  localStorage.removeItem("memo_super_admin_access_token");
+  localStorage.removeItem("memo_tenant_access_token");
+  localStorage.removeItem("memo_tenant_subdomain");
+  localStorage.removeItem("memo_super_admin_profile");
+  localStorage.removeItem("memo_tenant_profile");
+  localStorage.removeItem("memo_institution_profile");
 }
-
-export type { AuthRole, PersistedAuthState };

@@ -56,7 +56,7 @@ export function LoginForm() {
       });
 
       toast.success("Signed in successfully");
-      router.replace(getPostLoginPath(result.role));
+      router.replace(getPostLoginPath(result.user.role));
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to sign in";

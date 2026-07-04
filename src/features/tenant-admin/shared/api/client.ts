@@ -1,4 +1,4 @@
-import { getTenantAccessToken } from "@/features/auth/auth-access";
+import { getAccessToken } from "@/features/auth/auth-access";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 
@@ -29,7 +29,7 @@ export async function tenantApi<T>(
   path: string,
   init?: RequestInit,
 ): Promise<T> {
-  const token = getTenantAccessToken();
+  const token = getAccessToken();
   const headers = new Headers(init?.headers);
 
   if (!headers.has("Content-Type") && init?.body) {

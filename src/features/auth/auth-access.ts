@@ -1,53 +1,48 @@
-import {getStore} from "@/store/store";
+import { getStore } from "@/store/store";
 import {
-    selectAuthRole,
-    selectIsAuthenticated,
-    selectIsSuperAdminAuthenticated,
-    selectIsTenantAdminAuthenticated,
-    selectSuperAdminAccessToken,
-    selectTenantAccessToken,
-    selectTenantSubdomain,
+  selectAccessToken,
+  selectAuthRole,
+  selectInstitution,
+  selectIsAuthenticated,
+  selectIsInstitutionAdminAuthenticated,
+  selectIsSuperAdminAuthenticated,
+  selectIsTenantPortalAuthenticated,
 } from "@/features/auth/store/auth-selectors";
 
 export function getAuthRole() {
-    return selectAuthRole(getStore().getState());
-}
-
-export function getSuperAdminAccessToken() {
-    return selectSuperAdminAccessToken(getStore().getState());
-}
-
-export function getTenantAccessToken() {
-    return selectTenantAccessToken(getStore().getState());
+  return selectAuthRole(getStore().getState());
 }
 
 export function getAccessToken() {
-    const state = getStore().getState();
-    const role = selectAuthRole(state);
+  return selectAccessToken(getStore().getState());
+}
 
-    if (role === "super-admin") {
-        return selectSuperAdminAccessToken(state);
-    }
+/** @deprecated Use getAccessToken */
+export function getSuperAdminAccessToken() {
+  return getAccessToken();
+}
 
-    if (role === "tenant-admin") {
-        return selectTenantAccessToken(state);
-    }
-
-    return null;
+/** @deprecated Use getAccessToken */
+export function getTenantAccessToken() {
+  return getAccessToken();
 }
 
 export function getTenantSubdomain() {
-    return selectTenantSubdomain(getStore().getState());
+  return selectInstitution(getStore().getState())?.subdomain ?? null;
 }
 
 export function isAuthenticated() {
-    return selectIsAuthenticated(getStore().getState());
+  return selectIsAuthenticated(getStore().getState());
 }
 
 export function isSuperAdminAuthenticated() {
-    return selectIsSuperAdminAuthenticated(getStore().getState());
+  return selectIsSuperAdminAuthenticated(getStore().getState());
 }
 
 export function isTenantAdminAuthenticated() {
-    return selectIsTenantAdminAuthenticated(getStore().getState());
+  return selectIsInstitutionAdminAuthenticated(getStore().getState());
+}
+
+export function isTenantPortalAuthenticated() {
+  return selectIsTenantPortalAuthenticated(getStore().getState());
 }

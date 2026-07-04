@@ -73,7 +73,7 @@ export function AccountSetupForm({ token, details }: AccountSetupFormProps) {
       toast.success(`Welcome, ${details.adminName}! Your account is ready.`);
 
       // The backend auto-logs in the user — redirect straight to the dashboard.
-      router.replace(getPostLoginPath(result.role));
+      router.replace(getPostLoginPath(result.user.role));
     } catch (error) {
       const message =
         error instanceof Error

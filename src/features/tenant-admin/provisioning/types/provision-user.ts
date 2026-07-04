@@ -1,9 +1,11 @@
+import { Role } from "@/lib/rbac/role.enum";
+
 export interface ProvisionedUser {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
-  roleId: string;
+  role: Role;
   departmentId?: string;
   staffNumber?: string;
   phoneNumber?: string;

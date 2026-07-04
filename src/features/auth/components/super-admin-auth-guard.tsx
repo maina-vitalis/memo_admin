@@ -9,12 +9,14 @@ import {
   selectIsSuperAdminAuthenticated,
 } from "@/features/auth/store/auth-selectors";
 import { getPostLoginPath } from "@/features/auth/types";
+import { Role } from "@/lib/rbac/role.enum";
 import { Spinner } from "@/components/ui/spinner";
 
 type SuperAdminAuthGuardProps = {
   children: React.ReactNode;
 };
 
+/** [AUTH] Protects /super-admin routes — requires SUPER_ADMIN role. */
 export function SuperAdminAuthGuard({ children }: SuperAdminAuthGuardProps) {
   const router = useRouter();
   const hydrated = useAppSelector(selectAuthHydrated);
@@ -24,13 +26,12 @@ export function SuperAdminAuthGuard({ children }: SuperAdminAuthGuardProps) {
   useEffect(() => {
     if (!hydrated) return;
 
-    if (role === "tenant-admin") {
-      router.replace(getPostLoginPath("tenant-admin"));
+    if (role && role !== Role.SUPER_ADMIN) {
+      router.replace(getPostLoginPath(role));
       return;
     }
 
     if (!isAuthenticated) {
-      console.log("redirected");
       router.replace("/login");
     }
   }, [hydrated, isAuthenticated, role, router]);

@@ -3,7 +3,7 @@
 import type { Control, FieldErrors, UseFormRegister } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import type { ProvisionUserFormValues } from "@/features/tenant-admin/provisioning/schemas/provision-user.schema";
-import type { Role } from "@/features/tenant-admin/provisioning/api/get-roles";
+import type { AssignableRole } from "@/features/tenant-admin/provisioning/api/get-roles";
 import type { Department } from "@/features/tenant-admin/provisioning/api/get-departments";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
@@ -19,9 +19,16 @@ type ProvisionUserFieldsProps = {
   control: Control<ProvisionUserFormValues>;
   register: UseFormRegister<ProvisionUserFormValues>;
   errors: FieldErrors<ProvisionUserFormValues>;
-  roles: Role[];
+  roles: AssignableRole[];
   departments: Department[];
 };
+
+function formatRoleLabel(role: string): string {
+  return role
+    .split("_")
+    .map((part) => part.charAt(0) + part.slice(1).toLowerCase())
+    .join(" ");
+}
 
 export function ProvisionUserFields({
   control,
@@ -78,16 +85,16 @@ export function ProvisionUserFields({
       <FormField
         label="Role"
         description="Determines permissions and access level."
-        error={errors.roleId}
+        error={errors.role}
       >
         <Controller
-          name="roleId"
+          name="role"
           control={control}
           render={({ field }) => (
             <Select onValueChange={field.onChange} value={field.value || ""}>
               <SelectTrigger
-                id="roleId"
-                aria-invalid={!!errors.roleId}
+                id="role"
+                aria-invalid={!!errors.role}
                 className="w-full"
               >
                 <SelectValue placeholder="Select a role" />
@@ -95,12 +102,12 @@ export function ProvisionUserFields({
               <SelectContent>
                 {roles.length === 0 ? (
                   <div className="px-2 py-6 text-center text-sm text-muted-foreground">
-                    No roles available. Create roles first.
+                    No assignable roles for your account.
                   </div>
                 ) : (
-                  roles.map((role) => (
-                    <SelectItem key={role.id} value={role.id}>
-                      {role.name}
+                  roles.map((item) => (
+                    <SelectItem key={item.role} value={item.role}>
+                      {formatRoleLabel(item.role)}
                     </SelectItem>
                   ))
                 )}

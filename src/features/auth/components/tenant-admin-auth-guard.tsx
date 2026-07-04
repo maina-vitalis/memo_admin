@@ -6,26 +6,28 @@ import { useAppSelector } from "@/store/hooks";
 import {
   selectAuthHydrated,
   selectAuthRole,
-  selectIsTenantAdminAuthenticated,
+  selectIsTenantPortalAuthenticated,
 } from "@/features/auth/store/auth-selectors";
 import { getPostLoginPath } from "@/features/auth/types";
+import { Role } from "@/lib/rbac/role.enum";
 import { Spinner } from "@/components/ui/spinner";
 
 type TenantAdminAuthGuardProps = {
   children: React.ReactNode;
 };
 
+/** [AUTH] Protects /admin routes — institution-scoped roles only. */
 export function TenantAdminAuthGuard({ children }: TenantAdminAuthGuardProps) {
   const router = useRouter();
   const hydrated = useAppSelector(selectAuthHydrated);
   const role = useAppSelector(selectAuthRole);
-  const isAuthenticated = useAppSelector(selectIsTenantAdminAuthenticated);
+  const isAuthenticated = useAppSelector(selectIsTenantPortalAuthenticated);
 
   useEffect(() => {
     if (!hydrated) return;
 
-    if (role === "super-admin") {
-      router.replace(getPostLoginPath("super-admin"));
+    if (role === Role.SUPER_ADMIN) {
+      router.replace(getPostLoginPath(role));
       return;
     }
 

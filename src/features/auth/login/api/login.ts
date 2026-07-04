@@ -1,7 +1,7 @@
-import { discoverInstitution } from "@/features/auth/login/api/discover-institution";
-import { loginSuperAdmin } from "@/features/auth/login/api/login-super-admin";
-import { loginTenantAdmin } from "@/features/auth/login/api/login-tenant";
+import adminAxios from "@/features/auth/api/axios-auth-client";
+import { applyLoginResult } from "@/features/auth/auth-storage";
 import type { LoginInput, LoginResult } from "@/features/auth/types";
+import { Role } from "@/lib/rbac/role.enum";
 
 export class LoginError extends Error {
   constructor(message: string) {
@@ -10,34 +10,62 @@ export class LoginError extends Error {
   }
 }
 
+type LoginApiResponse = {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: "Bearer";
+  expiresIn: number;
+  user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: Role;
+    institutionId: string | null;
+  };
+  institution?: {
+    id: string;
+    name: string;
+    subdomain: string;
+  } | null;
+  mustChangePassword?: boolean;
+};
+
+/** [AUTH] Unified login — single /auth/login for all roles. */
 export async function login(input: LoginInput): Promise<LoginResult> {
   const email = input.email.trim().toLowerCase();
-  const password = input.password;
 
-  // 1. Attempt to login as Platform Admin (Super Admin) first
   try {
-    return await loginSuperAdmin(email, password);
-  } catch (superAdminError) {
-    // Ignore and proceed to discover institution for tenant login
-  }
+    const { data } = await adminAxios.post<LoginApiResponse>("/auth/login", {
+      email,
+      password: input.password,
+      deviceType: "web",
+      deviceId:
+        typeof window !== "undefined"
+          ? localStorage.getItem("memo_device_id") ?? undefined
+          : undefined,
+    });
 
-  // 2. If Super Admin fails, discover the institution using the email
-  let subdomain: string;
-  try {
-    const institution = await discoverInstitution(email);
-    subdomain = institution.subdomain;
-  } catch (discoverError) {
+    const result: LoginResult = {
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+      tokenType: data.tokenType,
+      expiresIn: data.expiresIn,
+      user: {
+        id: data.user.id,
+        email: data.user.email,
+        firstName: data.user.firstName,
+        lastName: data.user.lastName,
+        role: data.user.role,
+        institutionId: data.user.institutionId,
+      },
+      institution: data.institution ?? null,
+      mustChangePassword: data.mustChangePassword,
+    };
+
+    applyLoginResult(result);
+    return result;
+  } catch {
     throw new LoginError("Invalid credentials");
-  }
-
-  // 3. Attempt to login as Tenant Admin with the discovered subdomain
-  try {
-    return await loginTenantAdmin(subdomain, email, password);
-  } catch (tenantError) {
-    throw new LoginError(
-      tenantError instanceof Error
-        ? tenantError.message
-        : "Invalid credentials",
-    );
   }
 }

@@ -1,14 +1,12 @@
-import { tenantApi } from "../../shared/api/client";
+import { tenantApi } from "@/features/tenant-admin/shared/api/client";
+import { Role } from "@/lib/rbac/role.enum";
 
-export interface Role {
-  id: string;
-  name: string;
-  hierarchyLevel: number;
-  isActive: boolean;
-}
+export type AssignableRole = {
+  role: Role;
+  rank: number;
+};
 
-export async function getRoles(): Promise<Role[]> {
-  return tenantApi<Role[]>("/roles", {
-    method: "GET",
-  });
+/** [RBAC] Fetch roles the current actor may assign (fixed enum, ceiling-filtered). */
+export async function getRoles(): Promise<AssignableRole[]> {
+  return tenantApi<AssignableRole[]>("/users/assignable-roles");
 }
