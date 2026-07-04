@@ -1,7 +1,26 @@
+import { getSecondsUntilExpiry } from "@/features/auth/jwt";
 import { Role } from "@/lib/rbac/role.enum";
 import type { AuthState } from "@/features/auth/store/auth-slice";
 
 const AUTH_KEY = "memo_auth";
+const AUTH_COOKIE = "memo_auth";
+
+function setAuthCookie(accessToken: string) {
+  if (typeof document === "undefined") return;
+
+  const maxAge = getSecondsUntilExpiry(accessToken);
+  if (!maxAge || maxAge <= 0) {
+    clearAuthCookie();
+    return;
+  }
+
+  document.cookie = `${AUTH_COOKIE}=${encodeURIComponent(accessToken)}; path=/; max-age=${maxAge}; SameSite=Lax`;
+}
+
+function clearAuthCookie() {
+  if (typeof document === "undefined") return;
+  document.cookie = `${AUTH_COOKIE}=; path=/; max-age=0; SameSite=Lax`;
+}
 
 type PersistedAuthState = Pick<
   AuthState,
@@ -52,12 +71,23 @@ export function saveAuthToStorage(state: PersistedAuthState) {
     accessToken: state.accessToken,
     institution: state.institution,
   }));
+  setAuthCookie(state.accessToken);
+}
+
+export function syncAuthCookieFromStorage() {
+  const persisted = loadAuthFromStorage();
+  if (persisted?.accessToken) {
+    setAuthCookie(persisted.accessToken);
+  } else {
+    clearAuthCookie();
+  }
 }
 
 export function clearAuthStorage() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(AUTH_KEY);
   localStorage.removeItem("memo_refresh_token");
+  clearAuthCookie();
   // Clear legacy keys from old dual-auth system
   localStorage.removeItem("memo_auth_role");
   localStorage.removeItem("memo_super_admin_access_token");

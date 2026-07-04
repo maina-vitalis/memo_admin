@@ -1,3 +1,4 @@
+import axios from "axios";
 import adminAxios from "@/features/auth/api/axios-auth-client";
 import { applyLoginResult } from "@/features/auth/auth-storage";
 import type { LoginInput, LoginResult } from "@/features/auth/types";
@@ -70,6 +71,15 @@ export async function login(input: LoginInput): Promise<LoginResult> {
     return result;
   } catch (err) {
     if (err instanceof LoginError) throw err;
+    if (axios.isAxiosError(err)) {
+      const data = err.response?.data as
+        | { message?: string | string[] }
+        | undefined;
+      const message = Array.isArray(data?.message)
+        ? data.message[0]
+        : data?.message;
+      throw new LoginError(message ?? "Invalid credentials");
+    }
     const message =
       err instanceof Error ? err.message : "Invalid credentials";
     throw new LoginError(message);

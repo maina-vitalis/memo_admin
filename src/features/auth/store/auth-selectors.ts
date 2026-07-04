@@ -32,13 +32,17 @@ export const selectIsAuthLoading = (state: RootState) =>
   state.auth.status === "loading";
 export const selectTenantSubdomain = (state: RootState) =>
   state.auth.institution?.subdomain ?? null;
-export const selectIsSuperAdminAuthenticated = (state: RootState) =>
-  Boolean(state.auth.accessToken && isSuperAdmin(state.auth.role));
+
+export const selectIsSuperAdminAuthenticated = (state: RootState) => {
+  console.log(state.auth, "maina");
+  return Boolean(state.auth.accessToken && isSuperAdmin(state.auth.role));
+};
+
 export const selectIsInstitutionAdminAuthenticated = (state: RootState) =>
   Boolean(
     state.auth.accessToken &&
-      isInstitutionPortalRole(state.auth.role) &&
-      state.auth.role === Role.INSTITUTION_ADMIN,
+    isInstitutionPortalRole(state.auth.role) &&
+    state.auth.role === Role.INSTITUTION_ADMIN,
   );
 export const selectIsTenantPortalAuthenticated = (state: RootState) =>
   Boolean(state.auth.accessToken && isInstitutionPortalRole(state.auth.role));

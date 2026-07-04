@@ -23,6 +23,8 @@ export function SuperAdminAuthGuard({ children }: SuperAdminAuthGuardProps) {
   const role = useAppSelector(selectAuthRole);
   const isAuthenticated = useAppSelector(selectIsSuperAdminAuthenticated);
 
+  console.log("hello maina");
+
   useEffect(() => {
     if (!hydrated) return;
 

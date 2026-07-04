@@ -30,17 +30,13 @@ export function proxy(request: NextRequest) {
   }
 
   const authRaw = request.cookies.get("memo_auth")?.value;
-  const token =
-    authRaw ??
-    request.headers.get("authorization")?.replace("Bearer ", "") ??
-    null;
+  const token = authRaw
+    ? decodeURIComponent(authRaw)
+    : (request.headers.get("authorization")?.replace("Bearer ", "") ?? null);
 
-  // Client-side auth uses localStorage; proxy is a best-effort redirect
-  // when a cookie is present (optional future: set httpOnly cookie on login).
+  // Client-side auth uses localStorage; proxy only enforces role routing when a
+  // cookie is present. Unauthenticated access is handled by client auth guards.
   if (!token) {
-    if (pathname.startsWith("/super-admin") || pathname.startsWith("/admin")) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
     return NextResponse.next();
   }
 

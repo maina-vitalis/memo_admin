@@ -8,6 +8,7 @@ import {
   clearAuthStorage,
   loadAuthFromStorage,
   saveAuthToStorage,
+  syncAuthCookieFromStorage,
 } from "@/features/auth/store/auth-persistence";
 import type { AuthUser, InstitutionSummary, LoginInput, LoginResult } from "@/features/auth/types";
 import { Role } from "@/lib/rbac/role.enum";
@@ -78,6 +79,7 @@ const authSlice = createSlice({
       if (persisted) {
         Object.assign(state, persisted);
         state.status = persisted.role ? "authenticated" : "idle";
+        syncAuthCookieFromStorage();
       }
 
       state.hydrated = true;
