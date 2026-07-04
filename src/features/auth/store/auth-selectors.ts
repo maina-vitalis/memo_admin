@@ -1,17 +1,29 @@
+import { createSelector } from "@reduxjs/toolkit";
+
 import { Role } from "@/lib/rbac/role.enum";
 import type { RootState } from "@/store/store";
 import { isInstitutionPortalRole, isSuperAdmin } from "@/features/auth/types";
 
 export const selectAuthHydrated = (state: RootState) => state.auth.hydrated;
 export const selectAuthRole = (state: RootState) => state.auth.role;
-export const selectAuthUser = (state: RootState) => ({
-  id: state.auth.id,
-  email: state.auth.email,
-  role: state.auth.role,
-  institutionId: state.auth.institutionId,
-  firstName: state.auth.firstName,
-  lastName: state.auth.lastName,
-});
+export const selectAuthUser = createSelector(
+  [
+    (state: RootState) => state.auth.id,
+    (state: RootState) => state.auth.email,
+    (state: RootState) => state.auth.role,
+    (state: RootState) => state.auth.institutionId,
+    (state: RootState) => state.auth.firstName,
+    (state: RootState) => state.auth.lastName,
+  ],
+  (id, email, role, institutionId, firstName, lastName) => ({
+    id,
+    email,
+    role,
+    institutionId,
+    firstName,
+    lastName,
+  }),
+);
 export const selectAccessToken = (state: RootState) => state.auth.accessToken;
 export const selectInstitution = (state: RootState) => state.auth.institution;
 export const selectIsAuthenticated = (state: RootState) =>
