@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { loginSuperAdmin } from "@/features/super-admin/auth/api/login";
 import { ApiError } from "@/lib/api/http";
-import { isAuthenticated } from "@/lib/auth/session";
+import { isAuthenticated } from "@/features/auth/auth-access";
 import { Button } from "@/components/ui/button";
 import {
   Card,

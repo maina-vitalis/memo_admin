@@ -1,5 +1,5 @@
 import axios from "axios";
-import adminAxios from "@/features/auth/api/axios-auth-client";
+import apiClient from "@/lib/api/axios-client";
 import { applyLoginResult } from "@/features/auth/auth-storage";
 import type { LoginInput, LoginResult } from "@/features/auth/types";
 import { Role } from "@/lib/rbac/role.enum";
@@ -37,7 +37,7 @@ export async function login(input: LoginInput): Promise<LoginResult> {
   const email = input.email.trim().toLowerCase();
 
   try {
-    const { data: body } = await adminAxios.post<{ success: boolean; data: LoginApiResponse } | LoginApiResponse>("/auth/login", {
+    const { data: body } = await apiClient.post<{ success: boolean; data: LoginApiResponse } | LoginApiResponse>("/auth/login", {
       email,
       password: input.password,
       deviceType: "web",

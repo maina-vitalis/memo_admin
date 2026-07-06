@@ -2,7 +2,7 @@ import { getStore } from "@/store/store";
 import { selectAccessToken } from "./store/auth-selectors";
 import { applyAuthSession, refreshAccessToken } from "./store/auth-slice";
 import type { LoginResult } from "./types";
-import { API_BASE_URL } from "@/lib/api/config";
+import apiClient from "@/lib/api/axios-client";
 
 export {
   loadAuthFromStorage,
@@ -49,18 +49,11 @@ export async function serverLogout() {
   const refresh = getRefreshToken();
 
   try {
-    await fetch(`${API_BASE_URL}/auth/logout`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(getAccessToken()
-          ? { Authorization: `Bearer ${getAccessToken()}` }
-          : {}),
-      },
-      body: refresh ? JSON.stringify({ refreshToken: refresh }) : undefined,
-    });
+    // apiClient automatically attaches the Authorization header via interceptors.
+    // We pass the refresh token in the body so the backend can revoke the session.
+    await apiClient.post("/auth/logout", refresh ? { refreshToken: refresh } : {});
   } catch {
-    // ignore network errors on logout
+    // Ignore network errors — logout should never block the UI
   } finally {
     clearTokens();
   }

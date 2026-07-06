@@ -1,14 +1,13 @@
-import { getSuperAdminAccessToken } from "@/features/auth/auth-access";
-import { superAdminConfig } from "@/features/super-admin/shared/config";
+/**
+ * Super-admin API helper.
+ *
+ * Wraps `apiClient` (axios) with the same public signature previously
+ * provided by the fetch-based `superAdminApi` function.
+ * Token attachment and refresh are handled by the global interceptors.
+ */
 
-type ApiErrorBody = {
-  message?: string | string[];
-};
-
-type ApiSuccessBody<T> = {
-  success: true;
-  data: T;
-};
+import apiClient from "@/lib/api/axios-client";
+import axios from "axios";
 
 export class SuperAdminApiError extends Error {
   constructor(
@@ -20,51 +19,50 @@ export class SuperAdminApiError extends Error {
   }
 }
 
-function formatErrorMessage(body: ApiErrorBody | null, status: number) {
-  if (!body?.message) {
-    return `Request failed (${status})`;
-  }
-
-  return Array.isArray(body.message) ? body.message.join(", ") : body.message;
+function extractMessage(
+  data: { message?: string | string[] } | null,
+  status: number,
+): string {
+  if (!data?.message) return `Request failed (${status})`;
+  return Array.isArray(data.message) ? data.message.join(", ") : data.message;
 }
 
 export async function superAdminApi<T>(
   path: string,
   init?: RequestInit,
 ): Promise<T> {
-  const token = getSuperAdminAccessToken();
-  const headers = new Headers(init?.headers);
+  const method = (init?.method ?? "GET").toUpperCase();
+  const body =
+    typeof init?.body === "string" ? JSON.parse(init.body) : init?.body;
 
-  if (!headers.has("Content-Type") && init?.body) {
-    headers.set("Content-Type", "application/json");
+  try {
+    const { data: raw } = await apiClient.request<
+      { success: true; data: T } | T
+    >({
+      url: path,
+      method,
+      data: body,
+    });
+
+    // Unwrap envelope if present
+    if (
+      raw &&
+      typeof raw === "object" &&
+      "success" in (raw as object) &&
+      "data" in (raw as object)
+    ) {
+      return (raw as { success: true; data: T }).data;
+    }
+
+    return raw as T;
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      const responseData = err.response?.data as
+        | { message?: string | string[] }
+        | null;
+      const status = err.response?.status ?? 0;
+      throw new SuperAdminApiError(extractMessage(responseData, status), status);
+    }
+    throw err;
   }
-
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
-
-  const response = await fetch(`${superAdminConfig.apiBaseUrl}${path}`, {
-    ...init,
-    headers,
-  });
-
-  const body = (await response.json().catch(() => null)) as
-    | ApiSuccessBody<T>
-    | ApiErrorBody
-    | null;
-
-  if (!response.ok) {
-    throw new SuperAdminApiError(
-      formatErrorMessage(body as ApiErrorBody | null, response.status),
-      response.status,
-    );
-  }
-
-  if (body && typeof body === "object" && "data" in body) {
-    return body.data;
-  }
-
-  return body as T;
 }
-
-

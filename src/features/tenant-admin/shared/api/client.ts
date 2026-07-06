@@ -1,9 +1,18 @@
-import { getAccessToken } from "@/features/auth/auth-access";
+/**
+ * Tenant-admin API helper.
+ *
+ * Wraps `apiClient` (axios) with the same public signature previously
+ * provided by the fetch-based `tenantApi` function.
+ * Token attachment and refresh are handled by the global interceptors.
+ */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
+import apiClient from "@/lib/api/axios-client";
+import { API_BASE_URL } from "@/lib/api/config";
+import axios from "axios";
 
+/** @deprecated — use API_BASE_URL from @/lib/api/config directly */
 export const tenantApiConfig = {
-  baseUrl: API_BASE,
+  baseUrl: API_BASE_URL,
   useMock: false,
 } as const;
 
@@ -17,59 +26,52 @@ export class TenantApiError extends Error {
   }
 }
 
-function formatErrorMessage(body: { message?: string | string[] } | null, status: number) {
-  if (!body?.message) {
-    return `Request failed (${status})`;
-  }
-
-  return Array.isArray(body.message) ? body.message.join(", ") : body.message;
+function extractMessage(
+  data: { message?: string | string[] } | null,
+  status: number,
+): string {
+  if (!data?.message) return `Request failed (${status})`;
+  return Array.isArray(data.message) ? data.message.join(", ") : data.message;
 }
 
 export async function tenantApi<T>(
   path: string,
   init?: RequestInit,
 ): Promise<T> {
-  const token = getAccessToken();
-  const headers = new Headers(init?.headers);
+  const method = (init?.method ?? "GET").toUpperCase();
+  const body =
+    typeof init?.body === "string" ? JSON.parse(init.body) : init?.body;
 
-  if (!headers.has("Content-Type") && init?.body) {
-    headers.set("Content-Type", "application/json");
+  try {
+    const { data: raw, status } = await apiClient.request<
+      { success: true; data: T } | T
+    >({
+      url: path,
+      method,
+      data: body,
+    });
+
+    if (status === 204) return undefined as T;
+
+    // Unwrap envelope if present
+    if (
+      raw &&
+      typeof raw === "object" &&
+      "data" in (raw as object) &&
+      "success" in (raw as object)
+    ) {
+      return (raw as { success: true; data: T }).data;
+    }
+
+    return raw as T;
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      const responseData = err.response?.data as
+        | { message?: string | string[] }
+        | null;
+      const status = err.response?.status ?? 0;
+      throw new TenantApiError(extractMessage(responseData, status), status);
+    }
+    throw err;
   }
-
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
-
-  const response = await fetch(`${tenantApiConfig.baseUrl}${path}`, {
-    ...init,
-    headers,
-  });
-
-  if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as {
-      message?: string | string[];
-    } | null;
-
-    throw new TenantApiError(
-      formatErrorMessage(body, response.status),
-      response.status,
-    );
-  }
-
-  const body = (await response.json().catch(() => null)) as
-    | { success: true; data: T }
-    | { message?: string | string[] }
-    | null;
-
-  if (response.status === 204) {
-    return undefined as T;
-  }
-
-  if (body && typeof body === "object" && "data" in body) {
-    return body.data;
-  }
-
-  return body as T;
 }
-
-

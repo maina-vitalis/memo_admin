@@ -1,8 +1,8 @@
-import { parseApiResponse } from "@/features/auth/api/parse-api-response";
+import apiClient from "@/lib/api/axios-client";
 import type { CompleteAccountSetupInput } from "@/features/auth/account-setup/types/account-setup";
 import type { LoginResult } from "@/features/auth/types";
 import { Role } from "@/lib/rbac/role.enum";
-import { tenantApiConfig } from "@/features/tenant-admin/shared/api/client";
+import axios from "axios";
 
 type CompleteSetupResponse = {
   accessToken: string;
@@ -24,6 +24,8 @@ type CompleteSetupResponse = {
   };
 };
 
+type ApiEnvelope<T> = { success: true; data: T };
+
 export class CompleteAccountSetupError extends Error {
   constructor(
     message: string,
@@ -37,21 +39,19 @@ export class CompleteAccountSetupError extends Error {
 export async function completeAccountSetup(
   input: CompleteAccountSetupInput,
 ): Promise<LoginResult> {
-  const response = await fetch(`${tenantApiConfig.baseUrl}/auth/setup/complete`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+  try {
+    const { data: raw } = await apiClient.post<
+      ApiEnvelope<CompleteSetupResponse> | CompleteSetupResponse
+    >("/auth/setup/complete", {
       token: input.token,
       password: input.password,
       deviceType: "web",
-    }),
-  });
+    });
 
-  try {
-    const result = await parseApiResponse<CompleteSetupResponse>(
-      response,
-      "Failed to complete account setup",
-    );
+    const result =
+      raw && typeof raw === "object" && "data" in raw
+        ? (raw as ApiEnvelope<CompleteSetupResponse>).data
+        : (raw as CompleteSetupResponse);
 
     return {
       accessToken: result.accessToken,
@@ -68,12 +68,16 @@ export async function completeAccountSetup(
       },
       institution: result.institution ?? null,
     };
-  } catch (error) {
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      const data = err.response?.data as { message?: string | string[] } | undefined;
+      const message = Array.isArray(data?.message)
+        ? data.message.join(", ")
+        : (data?.message ?? "Failed to complete account setup");
+      throw new CompleteAccountSetupError(message, err.response?.status);
+    }
     throw new CompleteAccountSetupError(
-      error instanceof Error
-        ? error.message
-        : "Failed to complete account setup",
-      response.status,
+      err instanceof Error ? err.message : "Failed to complete account setup",
     );
   }
 }

@@ -1,6 +1,8 @@
-import { parseApiResponse } from "@/features/auth/api/parse-api-response";
+import apiClient from "@/lib/api/axios-client";
 import type { SetupTokenDetails } from "@/features/auth/account-setup/types/account-setup";
-import { tenantApiConfig } from "@/features/tenant-admin/shared/api/client";
+import axios from "axios";
+
+type ApiEnvelope<T> = { success: true; data: T };
 
 export class SetupTokenError extends Error {
   constructor(
@@ -15,21 +17,26 @@ export class SetupTokenError extends Error {
 export async function verifySetupToken(
   token: string,
 ): Promise<SetupTokenDetails> {
-  const response = await fetch(`${tenantApiConfig.baseUrl}/auth/setup/verify`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token }),
-  });
-
   try {
-    return await parseApiResponse<SetupTokenDetails>(
-      response,
-      "Invalid or expired setup link",
-    );
-  } catch (error) {
+    const { data: raw } = await apiClient.post<
+      ApiEnvelope<SetupTokenDetails> | SetupTokenDetails
+    >("/auth/setup/verify", { token });
+
+    if (raw && typeof raw === "object" && "data" in raw) {
+      return (raw as ApiEnvelope<SetupTokenDetails>).data;
+    }
+
+    return raw as SetupTokenDetails;
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      const data = err.response?.data as { message?: string | string[] } | undefined;
+      const message = Array.isArray(data?.message)
+        ? data.message.join(", ")
+        : (data?.message ?? "Invalid or expired setup link");
+      throw new SetupTokenError(message, err.response?.status);
+    }
     throw new SetupTokenError(
-      error instanceof Error ? error.message : "Invalid or expired setup link",
-      response.status,
+      err instanceof Error ? err.message : "Invalid or expired setup link",
     );
   }
 }

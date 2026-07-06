@@ -1,5 +1,17 @@
-import { API_BASE_URL } from "@/lib/api/config";
-import { getAccessToken } from "@/features/auth/auth-access";
+/**
+ * Thin wrapper around `apiClient` (axios) that preserves the original
+ * `apiRequest` call-signature used throughout the super-admin feature set.
+ *
+ * All requests go through the global interceptors defined in axios-client.ts,
+ * so token attachment and refresh happen automatically.
+ */
+
+import apiClient from "@/lib/api/axios-client";
+import axios from "axios";
+
+// ---------------------------------------------------------------------------
+// Shared error type
+// ---------------------------------------------------------------------------
 
 export class ApiError extends Error {
   status: number;
@@ -11,26 +23,23 @@ export class ApiError extends Error {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Internal helpers
+// ---------------------------------------------------------------------------
+
 type ApiEnvelope<T> = {
   success: boolean;
   data?: T;
   message?: string | string[];
 };
 
-function extractErrorMessage(data: unknown, fallback: string) {
-  if (!data || typeof data !== "object") {
-    return fallback;
-  }
+function extractErrorMessage(data: unknown, fallback: string): string {
+  if (!data || typeof data !== "object") return fallback;
 
   const payload = data as ApiEnvelope<unknown>;
 
-  if (Array.isArray(payload.message)) {
-    return payload.message.join(", ");
-  }
-
-  if (typeof payload.message === "string") {
-    return payload.message;
-  }
+  if (Array.isArray(payload.message)) return payload.message.join(", ");
+  if (typeof payload.message === "string") return payload.message;
 
   return fallback;
 }
@@ -49,54 +58,40 @@ function unwrapResponse<T>(data: unknown): T {
   return data as T;
 }
 
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
 export async function apiRequest<T>(
   path: string,
   options: {
     method?: string;
     body?: unknown;
+    /** @deprecated — token attachment is handled automatically by apiClient */
     token?: string | null;
+    /** @deprecated — auth is always applied via interceptors; kept for backward compat */
     auth?: boolean;
   } = {},
 ): Promise<T> {
-  const { method = "GET", body, auth = false } = options;
-  const token =
-    options.token !== undefined ? options.token : auth ? getAccessToken() : null;
+  const { method = "GET", body } = options;
 
-  const headers: Record<string, string> = {
-    Accept: "application/json",
-  };
+  try {
+    const { data } = await apiClient.request<unknown>({
+      url: path,
+      method,
+      data: body,
+    });
 
-  if (body !== undefined) {
-    headers["Content-Type"] = "application/json";
-  }
-
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
-
-  const text = await response.text();
-  let data: unknown = null;
-
-  if (text) {
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = text;
+    return unwrapResponse<T>(data);
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      const responseData = err.response?.data;
+      const status = err.response?.status ?? 0;
+      throw new ApiError(
+        extractErrorMessage(responseData, `Request failed (${status})`),
+        status,
+      );
     }
+    throw err;
   }
-
-  if (!response.ok) {
-    throw new ApiError(
-      extractErrorMessage(data, `Request failed (${response.status})`),
-      response.status,
-    );
-  }
-
-  return unwrapResponse<T>(data);
 }

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
-import { isAuthenticated } from "@/lib/auth/session";
+import { isAuthenticated } from "@/features/auth/auth-access";
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
