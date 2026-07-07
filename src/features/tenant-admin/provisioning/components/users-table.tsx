@@ -1,7 +1,7 @@
 "use client";
 
 import type { User } from "@/features/tenant-admin/provisioning/api/get-users";
-import { usersColumns } from "@/features/tenant-admin/provisioning/components/users-columns";
+import { getUsersColumns } from "@/features/tenant-admin/provisioning/components/users-columns";
 import { DataTable } from "@/components/data-table/data-table";
 
 interface UsersTableProps {
@@ -9,6 +9,8 @@ interface UsersTableProps {
 }
 
 export function UsersTable({ users }: UsersTableProps) {
+  const columns = getUsersColumns();
+
   if (users.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-border bg-muted/50 p-12 text-center">
@@ -21,7 +23,7 @@ export function UsersTable({ users }: UsersTableProps) {
 
   return (
     <DataTable
-      columns={usersColumns}
+      columns={columns}
       data={users}
       emptyMessage="No users found. Start by provisioning your first user."
     />

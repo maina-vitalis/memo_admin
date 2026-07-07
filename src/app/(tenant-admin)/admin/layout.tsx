@@ -6,7 +6,6 @@ import {
   LayoutDashboardIcon,
   LogOutIcon,
   MailIcon,
-  ShieldIcon,
   SmartphoneIcon, // for devices/sessions
   UserCircleIcon,
   UsersIcon,
@@ -43,7 +42,6 @@ const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboardIcon },
   { label: "Directory", href: "/admin/directory", icon: UsersIcon },
   { label: "Departments", href: "/admin/departments", icon: Building2Icon },
-  { label: "Roles", href: "/admin/roles", icon: ShieldIcon },
   { label: "Memos", href: "/admin/memos", icon: MailIcon },
   { label: "Security", href: "/admin/security", icon: SmartphoneIcon }, // [ACTIVE SESSIONS + SIGN OUT ALL]
 ] as const;

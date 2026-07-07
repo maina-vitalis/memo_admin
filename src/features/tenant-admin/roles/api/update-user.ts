@@ -2,7 +2,7 @@ import { tenantApi } from "../../shared/api/client";
 import type { UserInRole } from "./get-users";
 
 export interface UpdateUserPayload {
-  roleId?: string;
+  role?: string;
   departmentId?: string;
   firstName?: string;
   lastName?: string;

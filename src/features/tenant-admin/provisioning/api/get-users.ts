@@ -5,9 +5,11 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  role: string;
+  role?: string;
+  roleId?: string;
   departmentId?: string;
   staffNumber?: string;
+  admissionNumber?: string;
   phoneNumber?: string;
   isActive: boolean;
   mustChangePassword: boolean;

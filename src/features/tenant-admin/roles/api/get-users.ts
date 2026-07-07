@@ -5,7 +5,7 @@ export interface UserInRole {
   firstName: string;
   lastName: string;
   email: string;
-  roleId: string;
+  role: string;
   departmentId?: string;
   staffNumber?: string;
   phoneNumber?: string;

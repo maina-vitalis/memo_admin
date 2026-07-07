@@ -6,8 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useUpdateUser } from "@/features/tenant-admin/roles/api/use-update-user";
-import { useInstitutionRoles } from "@/features/tenant-admin/roles/api/use-roles";
 import type { UserInRole } from "@/features/tenant-admin/roles/api/get-users";
+import {
+  ASSIGNABLE_ROLES,
+  formatRoleLabel,
+} from "@/features/tenant-admin/provisioning/utils/role-label";
 import {
   Dialog,
   DialogContent,
@@ -33,7 +36,7 @@ import { PencilIcon } from "lucide-react";
 const updateUserSchema = z.object({
   firstName: z.string().trim().min(2, "First name must be at least 2 characters"),
   lastName: z.string().trim().min(2, "Last name must be at least 2 characters"),
-  roleId: z.string().uuid("Select a role"),
+  role: z.string().min(1, "Select a role"),
   phoneNumber: z.string().trim().optional(),
 });
 
@@ -46,7 +49,6 @@ interface EditUserDialogProps {
 export function EditUserDialog({ user }: EditUserDialogProps) {
   const [open, setOpen] = useState(false);
   const updateUserMutation = useUpdateUser();
-  const { data: roles } = useInstitutionRoles();
 
   const {
     control,
@@ -58,7 +60,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
     defaultValues: {
       firstName: user.firstName,
       lastName: user.lastName,
-      roleId: user.roleId,
+      role: user.role,
       phoneNumber: user.phoneNumber || "",
     },
   });
@@ -70,7 +72,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
         data: {
           firstName: values.firstName,
           lastName: values.lastName,
-          roleId: values.roleId,
+          role: values.role,
           phoneNumber: values.phoneNumber || undefined,
         },
       });
@@ -127,27 +129,27 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="roleId">Role</Label>
+            <Label htmlFor="role">Role</Label>
             <Controller
-              name="roleId"
+              name="role"
               control={control}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger id="roleId" className="w-full">
+                  <SelectTrigger id="role" className="w-full">
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
-                    {roles?.map((role) => (
-                      <SelectItem key={role.id} value={role.id}>
-                        {role.name}
+                    {ASSIGNABLE_ROLES.map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {formatRoleLabel(role)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               )}
             />
-            {errors.roleId && (
-              <p className="text-sm text-destructive">{errors.roleId.message}</p>
+            {errors.role && (
+              <p className="text-sm text-destructive">{errors.role.message}</p>
             )}
           </div>
 

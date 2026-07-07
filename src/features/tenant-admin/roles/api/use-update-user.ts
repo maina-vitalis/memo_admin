@@ -10,6 +10,7 @@ export function useUpdateUser() {
       updateUser(userId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["institution-users"] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 }
