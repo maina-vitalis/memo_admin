@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useProvisionUser } from "@/features/tenant-admin/provisioning/api/use-provision-user";
-import { useRoles } from "@/features/tenant-admin/provisioning/api/use-roles";
 import { useDepartments } from "@/features/tenant-admin/provisioning/api/use-departments";
 import { ProvisionUserFields } from "@/features/tenant-admin/provisioning/components/provision-user-fields";
 import {
@@ -28,7 +27,6 @@ import { Spinner } from "@/components/ui/spinner";
 export function ProvisionUserForm() {
   const router = useRouter();
   const provisionMutation = useProvisionUser();
-  const { data: roles, isLoading: rolesLoading } = useRoles();
   const { data: departments, isLoading: departmentsLoading } = useDepartments();
 
   const {
@@ -59,7 +57,7 @@ export function ProvisionUserForm() {
     }
   }
 
-  const isLoading = rolesLoading || departmentsLoading;
+  const isLoading = departmentsLoading;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="max-w-3xl">
@@ -69,8 +67,8 @@ export function ProvisionUserForm() {
             <CardHeader className="border-b">
               <CardTitle>User details</CardTitle>
               <CardDescription>
-                Create a new user account. The school code and a temporary password
-                will be emailed so they can log in via the mobile app.
+                Create a new user account. The school code and a temporary
+                password will be emailed so they can log in via the mobile app.
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
@@ -86,18 +84,19 @@ export function ProvisionUserForm() {
                   control={control}
                   register={register}
                   errors={errors}
-                  roles={roles ?? []}
                   departments={departments ?? []}
                 />
               )}
             </CardContent>
             <CardFooter className="flex flex-col items-stretch gap-4 border-t sm:flex-row sm:items-center sm:justify-between">
               {errors.root?.message ? (
-                <p className="text-sm text-destructive">{errors.root.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.root.message}
+                </p>
               ) : (
                 <FieldLegend className="mb-0 text-sm font-normal text-muted-foreground">
-                  A temporary password and the school code will be emailed to the user.
-                  They must change the password on first login.
+                  A temporary password and the school code will be emailed to
+                  the user. They must change the password on first login.
                 </FieldLegend>
               )}
 

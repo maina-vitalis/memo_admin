@@ -12,7 +12,9 @@ export function getOrCreateDeviceId(): string {
   try {
     let id = localStorage.getItem(DEVICE_ID_KEY);
     if (!id) {
-      id = (crypto as any).randomUUID ? (crypto as any).randomUUID() : `web-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      id = (crypto as any).randomUUID
+        ? (crypto as any).randomUUID()
+        : `web-${Date.now()}-${Math.random().toString(36).slice(2)}`;
       localStorage.setItem(DEVICE_ID_KEY, id as string);
     }
     return id as string;

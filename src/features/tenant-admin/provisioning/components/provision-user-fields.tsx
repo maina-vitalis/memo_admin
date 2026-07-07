@@ -3,8 +3,8 @@
 import type { Control, FieldErrors, UseFormRegister } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import type { ProvisionUserFormValues } from "@/features/tenant-admin/provisioning/schemas/provision-user.schema";
-import type { AssignableRole } from "@/features/tenant-admin/provisioning/api/get-roles";
 import type { Department } from "@/features/tenant-admin/provisioning/api/get-departments";
+import { Role } from "@/lib/rbac/role.enum";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,7 +19,6 @@ type ProvisionUserFieldsProps = {
   control: Control<ProvisionUserFormValues>;
   register: UseFormRegister<ProvisionUserFormValues>;
   errors: FieldErrors<ProvisionUserFormValues>;
-  roles: AssignableRole[];
   departments: Department[];
 };
 
@@ -30,11 +29,18 @@ function formatRoleLabel(role: string): string {
     .join(" ");
 }
 
+/**
+ * All roles a tenant admin can provision, in hierarchy order.
+ * SUPER_ADMIN is excluded — it's a platform-level role, not tenant-assignable.
+ */
+const ASSIGNABLE_ROLES: Role[] = Object.values(Role).filter(
+  (role) => role !== Role.SUPER_ADMIN,
+);
+
 export function ProvisionUserFields({
   control,
   register,
   errors,
-  roles,
   departments,
 }: ProvisionUserFieldsProps) {
   return (
@@ -100,17 +106,11 @@ export function ProvisionUserFields({
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent>
-                {roles.length === 0 ? (
-                  <div className="px-2 py-6 text-center text-sm text-muted-foreground">
-                    No assignable roles for your account.
-                  </div>
-                ) : (
-                  roles.map((item) => (
-                    <SelectItem key={item.role} value={item.role}>
-                      {formatRoleLabel(item.role)}
-                    </SelectItem>
-                  ))
-                )}
+                {ASSIGNABLE_ROLES.map((role) => (
+                  <SelectItem key={role} value={role}>
+                    {formatRoleLabel(role)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           )}
