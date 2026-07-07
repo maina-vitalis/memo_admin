@@ -29,13 +29,13 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const authRaw = request.cookies.get("memo_auth")?.value;
-  const token = authRaw
-    ? decodeURIComponent(authRaw)
-    : (request.headers.get("authorization")?.replace("Bearer ", "") ?? null);
+  // memo_access is a server-set HttpOnly cookie managed exclusively by the BFF.
+  // No URL-decoding needed (server never encodes it) and no Authorization header
+  // fallback — the HttpOnly cookie is now always the authoritative signal.
+  // NOTE: This middleware is a UX routing helper only. Real security is enforced
+  // by the NestJS backend on every authenticated request.
+  const token = request.cookies.get("memo_access")?.value ?? null;
 
-  // Client-side auth uses localStorage; proxy only enforces role routing when a
-  // cookie is present. Unauthenticated access is handled by client auth guards.
   if (!token) {
     return NextResponse.next();
   }

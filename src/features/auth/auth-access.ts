@@ -1,30 +1,26 @@
-import { getStore } from "@/store/store";
+/**
+ * [AUTH] auth-access.ts
+ *
+ * Synchronous accessors for auth state from outside React components.
+ *
+ * After BFF migration:
+ * - getAccessToken(), getSuperAdminAccessToken(), getTenantAccessToken() are
+ *   REMOVED. The access token lives in an HttpOnly cookie — JS cannot read it.
+ * - Role and institution accessors are unchanged.
+ */
+
+import { getStore } from '@/store/store';
 import {
-  selectAccessToken,
   selectAuthRole,
   selectInstitution,
   selectIsAuthenticated,
   selectIsInstitutionAdminAuthenticated,
   selectIsSuperAdminAuthenticated,
   selectIsTenantPortalAuthenticated,
-} from "@/features/auth/store/auth-selectors";
+} from '@/features/auth/store/auth-selectors';
 
 export function getAuthRole() {
   return selectAuthRole(getStore().getState());
-}
-
-export function getAccessToken() {
-  return selectAccessToken(getStore().getState());
-}
-
-/** @deprecated Use getAccessToken */
-export function getSuperAdminAccessToken() {
-  return getAccessToken();
-}
-
-/** @deprecated Use getAccessToken */
-export function getTenantAccessToken() {
-  return getAccessToken();
 }
 
 export function getTenantSubdomain() {

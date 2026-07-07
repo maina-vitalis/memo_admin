@@ -1,11 +1,21 @@
-import { createSelector } from "@reduxjs/toolkit";
+/**
+ * [AUTH] auth-selectors.ts
+ *
+ * After BFF migration:
+ * - `selectAccessToken` is REMOVED — token lives in an HttpOnly cookie, not Redux.
+ * - `selectIsAuthenticated` and role-specific guards now check `role + id`.
+ * - Deprecated selectors (selectSuperAdminAccessToken, selectTenantAccessToken)
+ *   are fully removed.
+ */
 
-import { Role } from "@/lib/rbac/role.enum";
-import type { RootState } from "@/store/store";
-import { isInstitutionPortalRole, isSuperAdmin } from "@/features/auth/types";
+import { createSelector } from '@reduxjs/toolkit';
+import { Role } from '@/lib/rbac/role.enum';
+import type { RootState } from '@/store/store';
+import { isInstitutionPortalRole, isSuperAdmin } from '@/features/auth/types';
 
 export const selectAuthHydrated = (state: RootState) => state.auth.hydrated;
 export const selectAuthRole = (state: RootState) => state.auth.role;
+
 export const selectAuthUser = createSelector(
   [
     (state: RootState) => state.auth.id,
@@ -24,30 +34,29 @@ export const selectAuthUser = createSelector(
     lastName,
   }),
 );
-export const selectAccessToken = (state: RootState) => state.auth.accessToken;
+
 export const selectInstitution = (state: RootState) => state.auth.institution;
+
+/** User is authenticated when we have their profile (role + id).
+ *  Actual token validity is enforced server-side on every API request. */
 export const selectIsAuthenticated = (state: RootState) =>
-  Boolean(state.auth.accessToken && state.auth.role);
+  Boolean(state.auth.role && state.auth.id);
+
 export const selectIsAuthLoading = (state: RootState) =>
-  state.auth.status === "loading";
+  state.auth.status === 'loading';
+
 export const selectTenantSubdomain = (state: RootState) =>
   state.auth.institution?.subdomain ?? null;
 
-export const selectIsSuperAdminAuthenticated = (state: RootState) => {
-  console.log(state.auth, "maina");
-  return Boolean(state.auth.accessToken && isSuperAdmin(state.auth.role));
-};
+export const selectIsSuperAdminAuthenticated = (state: RootState) =>
+  Boolean(state.auth.id && isSuperAdmin(state.auth.role));
 
 export const selectIsInstitutionAdminAuthenticated = (state: RootState) =>
   Boolean(
-    state.auth.accessToken &&
+    state.auth.id &&
     isInstitutionPortalRole(state.auth.role) &&
     state.auth.role === Role.INSTITUTION_ADMIN,
   );
-export const selectIsTenantPortalAuthenticated = (state: RootState) =>
-  Boolean(state.auth.accessToken && isInstitutionPortalRole(state.auth.role));
 
-/** @deprecated Use selectAccessToken */
-export const selectSuperAdminAccessToken = selectAccessToken;
-/** @deprecated Use selectAccessToken */
-export const selectTenantAccessToken = selectAccessToken;
+export const selectIsTenantPortalAuthenticated = (state: RootState) =>
+  Boolean(state.auth.id && isInstitutionPortalRole(state.auth.role));

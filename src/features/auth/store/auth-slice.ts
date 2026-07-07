@@ -1,21 +1,31 @@
-import {
-  createAsyncThunk,
-  createSlice,
-  type PayloadAction,
-} from "@reduxjs/toolkit";
-import { login as loginRequest } from "@/features/auth/login/api/login";
+/**
+ * [AUTH] auth-slice.ts
+ *
+ * Redux slice for authentication state.
+ *
+ * After BFF migration:
+ * - `accessToken` is REMOVED from AuthState. It lives in the `memo_access`
+ *   HttpOnly cookie set by the Next.js BFF — it is inaccessible to Redux.
+ * - `refreshAccessToken` reducer is REMOVED — the BFF manages token rotation
+ *   transparently via Set-Cookie headers; Redux does not need to track it.
+ * - `syncAuthCookieFromStorage` is REMOVED — server owns the cookie now.
+ * - Session "presence" is determined by `role + id` in Redux state.
+ *   Actual validity is enforced by the backend on every API call.
+ */
+
+import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { login as loginRequest } from '@/features/auth/login/api/login';
 import {
   clearAuthStorage,
   loadAuthFromStorage,
   saveAuthToStorage,
-  syncAuthCookieFromStorage,
-} from "@/features/auth/store/auth-persistence";
-import type { AuthUser, InstitutionSummary, LoginInput, LoginResult } from "@/features/auth/types";
-import { Role } from "@/lib/rbac/role.enum";
+} from '@/features/auth/store/auth-persistence';
+import type { AuthUser, InstitutionSummary, LoginInput, LoginResult } from '@/features/auth/types';
+import { Role } from '@/lib/rbac/role.enum';
 
-export type AuthStatus = "idle" | "loading" | "authenticated" | "error";
+export type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'error';
 
-/** [AUTH] Unified auth state — single token, role from fixed enum. */
+/** [AUTH] Unified auth state — no raw token; role + id signal authenticated presence. */
 export type AuthState = {
   id: string | null;
   email: string | null;
@@ -23,11 +33,11 @@ export type AuthState = {
   institutionId: string | null;
   firstName: string | null;
   lastName: string | null;
-  accessToken: string | null;
   institution: InstitutionSummary | null;
   status: AuthStatus;
   error: string | null;
   hydrated: boolean;
+  // accessToken intentionally removed — lives in HttpOnly cookie (BFF-managed)
 };
 
 const initialState: AuthState = {
@@ -37,13 +47,13 @@ const initialState: AuthState = {
   institutionId: null,
   firstName: null,
   lastName: null,
-  accessToken: null,
   institution: null,
-  status: "idle",
+  status: 'idle',
   error: null,
   hydrated: false,
 };
 
+/** Apply the safe user profile from a login/session response into Redux state. */
 function applyLoginResult(state: AuthState, result: LoginResult) {
   state.id = result.user.id;
   state.email = result.user.email;
@@ -51,89 +61,85 @@ function applyLoginResult(state: AuthState, result: LoginResult) {
   state.institutionId = result.user.institutionId;
   state.firstName = result.user.firstName;
   state.lastName = result.user.lastName;
-  state.accessToken = result.accessToken;
   state.institution = result.institution ?? null;
+  // No accessToken assignment — it lives in the HttpOnly cookie
 }
 
-export const login = createAsyncThunk<
-  LoginResult,
-  LoginInput,
-  { rejectValue: string }
->("auth/login", async (input, { rejectWithValue }) => {
-  try {
-    return await loginRequest(input);
-  } catch (error) {
-    return rejectWithValue(
-      error instanceof Error ? error.message : "Failed to sign in",
-    );
-  }
-});
+export const login = createAsyncThunk<LoginResult, LoginInput, { rejectValue: string }>(
+  'auth/login',
+  async (input, { rejectWithValue }) => {
+    try {
+      return await loginRequest(input);
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Failed to sign in',
+      );
+    }
+  },
+);
 
 const authSlice = createSlice({
-  name: "auth",
+  name: 'auth',
   initialState,
   reducers: {
+    /** Rehydrate Redux from localStorage on app startup. */
     hydrateAuth(state) {
       const persisted = loadAuthFromStorage();
 
       if (persisted) {
         Object.assign(state, persisted);
-        state.status = persisted.role ? "authenticated" : "idle";
-        syncAuthCookieFromStorage();
+        state.status = persisted.role ? 'authenticated' : 'idle';
+        // No syncAuthCookieFromStorage — server manages the cookie
       }
 
       state.hydrated = true;
     },
+
+    /** Log out — clear local state and trigger BFF cookie clearing. */
     logout(state) {
-      import("../auth-storage").then(({ serverLogout }) => {
+      // Fire-and-forget: BFF clears the HttpOnly cookies server-side.
+      import('../auth-storage').then(({ serverLogout }) => {
         serverLogout().catch(() => {});
       });
 
       clearAuthStorage();
       Object.assign(state, { ...initialState, hydrated: true });
     },
+
     clearAuthError(state) {
       state.error = null;
-      if (state.status === "error") {
-        state.status = state.role ? "authenticated" : "idle";
+      if (state.status === 'error') {
+        state.status = state.role ? 'authenticated' : 'idle';
       }
     },
+
+    /** Apply a successful login result (called after BFF login response). */
     applyAuthSession(state, action: PayloadAction<LoginResult>) {
       applyLoginResult(state, action.payload);
-      state.status = "authenticated";
+      state.status = 'authenticated';
       state.error = null;
-      saveAuthToStorage(state);
-    },
-    refreshAccessToken(state, action: PayloadAction<string>) {
-      state.accessToken = action.payload;
       saveAuthToStorage(state);
     },
   },
   extraReducers(builder) {
     builder
       .addCase(login.pending, (state) => {
-        state.status = "loading";
+        state.status = 'loading';
         state.error = null;
       })
       .addCase(login.fulfilled, (state, action) => {
         applyLoginResult(state, action.payload);
-        state.status = "authenticated";
+        state.status = 'authenticated';
         state.error = null;
         saveAuthToStorage(state);
       })
       .addCase(login.rejected, (state, action) => {
-        state.status = "error";
-        state.error = action.payload ?? "Failed to sign in";
+        state.status = 'error';
+        state.error = action.payload ?? 'Failed to sign in';
       });
   },
 });
 
-export const {
-  hydrateAuth,
-  logout,
-  clearAuthError,
-  applyAuthSession,
-  refreshAccessToken,
-} = authSlice.actions;
+export const { hydrateAuth, logout, clearAuthError, applyAuthSession } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;

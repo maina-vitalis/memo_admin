@@ -1,37 +1,34 @@
-import { getSecondsUntilExpiry } from "@/features/auth/jwt";
-import { Role } from "@/lib/rbac/role.enum";
-import type { AuthState } from "@/features/auth/store/auth-slice";
+/**
+ * [AUTH] auth-persistence.ts
+ *
+ * Manages non-sensitive auth state in localStorage for UI hydration on page load.
+ *
+ * After BFF migration:
+ * - accessToken is INTENTIONALLY OMITTED from persisted state. It lives in
+ *   the HttpOnly cookie managed by the Next.js BFF server-side.
+ * - Client-side cookie helpers (setAuthCookie, clearAuthCookie,
+ *   syncAuthCookieFromStorage) are REMOVED — the server owns the cookie now.
+ * - A user is considered "known" (profile hydrated) if `role` exists in
+ *   localStorage. Actual session validity is enforced by the backend via the
+ *   HttpOnly cookie on every authenticated API request.
+ */
 
-const AUTH_KEY = "memo_auth";
-const AUTH_COOKIE = "memo_auth";
+import { Role } from '@/lib/rbac/role.enum';
+import type { AuthState } from '@/features/auth/store/auth-slice';
 
-function setAuthCookie(accessToken: string) {
-  if (typeof document === "undefined") return;
+const AUTH_KEY = 'memo_auth';
 
-  const maxAge = getSecondsUntilExpiry(accessToken);
-  if (!maxAge || maxAge <= 0) {
-    clearAuthCookie();
-    return;
-  }
-
-  document.cookie = `${AUTH_COOKIE}=${encodeURIComponent(accessToken)}; path=/; max-age=${maxAge}; SameSite=Lax`;
-}
-
-function clearAuthCookie() {
-  if (typeof document === "undefined") return;
-  document.cookie = `${AUTH_COOKIE}=; path=/; max-age=0; SameSite=Lax`;
-}
-
+// Only non-sensitive profile data is persisted — never tokens.
 type PersistedAuthState = Pick<
   AuthState,
-  | "id"
-  | "email"
-  | "role"
-  | "institutionId"
-  | "firstName"
-  | "lastName"
-  | "accessToken"
-  | "institution"
+  | 'id'
+  | 'email'
+  | 'role'
+  | 'institutionId'
+  | 'firstName'
+  | 'lastName'
+  | 'institution'
+  // accessToken intentionally omitted — lives in HttpOnly cookie
 >;
 
 function readJson<T>(value: string | null): T | null {
@@ -43,57 +40,57 @@ function readJson<T>(value: string | null): T | null {
   }
 }
 
+/** Load persisted user profile from localStorage for UI hydration.
+ *  A user is "known" if role exists — actual session validity is
+ *  enforced server-side by the HttpOnly cookie. */
 export function loadAuthFromStorage(): PersistedAuthState | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === 'undefined') return null;
 
   const parsed = readJson<PersistedAuthState>(localStorage.getItem(AUTH_KEY));
-  if (!parsed?.accessToken || !parsed.role) return null;
+
+  // Role presence is the hydration signal — no accessToken check needed.
+  if (!parsed?.role) return null;
   if (!Object.values(Role).includes(parsed.role)) return null;
 
   return parsed;
 }
 
+/** Persist non-sensitive user profile to localStorage for page-reload hydration. */
 export function saveAuthToStorage(state: PersistedAuthState) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
 
-  if (!state.role || !state.accessToken) {
+  if (!state.role) {
     clearAuthStorage();
     return;
   }
 
-  localStorage.setItem(AUTH_KEY, JSON.stringify({
-    id: state.id,
-    email: state.email,
-    role: state.role,
-    institutionId: state.institutionId,
-    firstName: state.firstName,
-    lastName: state.lastName,
-    accessToken: state.accessToken,
-    institution: state.institution,
-  }));
-  setAuthCookie(state.accessToken);
+  localStorage.setItem(
+    AUTH_KEY,
+    JSON.stringify({
+      id: state.id,
+      email: state.email,
+      role: state.role,
+      institutionId: state.institutionId,
+      firstName: state.firstName,
+      lastName: state.lastName,
+      institution: state.institution,
+      // accessToken intentionally omitted
+    }),
+  );
+  // No cookie to set — the BFF server manages memo_access and memo_refresh.
 }
 
-export function syncAuthCookieFromStorage() {
-  const persisted = loadAuthFromStorage();
-  if (persisted?.accessToken) {
-    setAuthCookie(persisted.accessToken);
-  } else {
-    clearAuthCookie();
-  }
-}
-
+/** Clear all persisted auth state including legacy keys from prior auth systems. */
 export function clearAuthStorage() {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   localStorage.removeItem(AUTH_KEY);
-  localStorage.removeItem("memo_refresh_token");
-  clearAuthCookie();
-  // Clear legacy keys from old dual-auth system
-  localStorage.removeItem("memo_auth_role");
-  localStorage.removeItem("memo_super_admin_access_token");
-  localStorage.removeItem("memo_tenant_access_token");
-  localStorage.removeItem("memo_tenant_subdomain");
-  localStorage.removeItem("memo_super_admin_profile");
-  localStorage.removeItem("memo_tenant_profile");
-  localStorage.removeItem("memo_institution_profile");
+  // Clear legacy keys from old dual-auth / localStorage-token systems
+  localStorage.removeItem('memo_refresh_token');
+  localStorage.removeItem('memo_auth_role');
+  localStorage.removeItem('memo_super_admin_access_token');
+  localStorage.removeItem('memo_tenant_access_token');
+  localStorage.removeItem('memo_tenant_subdomain');
+  localStorage.removeItem('memo_super_admin_profile');
+  localStorage.removeItem('memo_tenant_profile');
+  localStorage.removeItem('memo_institution_profile');
 }

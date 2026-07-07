@@ -1,60 +1,41 @@
-import { getStore } from "@/store/store";
-import { selectAccessToken } from "./store/auth-selectors";
-import { applyAuthSession, refreshAccessToken } from "./store/auth-slice";
-import type { LoginResult } from "./types";
-import apiClient from "@/lib/api/axios-client";
+/**
+ * [AUTH] auth-storage.ts
+ *
+ * Public facade for auth state helpers.
+ *
+ * After BFF migration:
+ * - Raw token helpers (getRefreshToken, setRefreshToken, setAccessToken,
+ *   clearTokens) are REMOVED. Tokens live in HttpOnly cookies managed
+ *   exclusively by the Next.js BFF — JS cannot read or write them.
+ * - applyLoginResult() dispatches user profile to Redux (no token stored).
+ * - serverLogout() calls the BFF /api/auth/logout route which clears the
+ *   HttpOnly cookies server-side. Only a server Set-Cookie can do this.
+ */
+
+import { getStore } from '@/store/store';
+import { applyAuthSession } from './store/auth-slice';
+import type { LoginResult } from './types';
 
 export {
   loadAuthFromStorage,
   saveAuthToStorage,
   clearAuthStorage as clearAuth,
-} from "./store/auth-persistence";
+} from './store/auth-persistence';
 
-export function getAccessToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return selectAccessToken(getStore().getState()) ?? null;
-}
-
-export function getRefreshToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("memo_refresh_token");
-}
-
-export function setAccessToken(token: string) {
-  if (typeof window === "undefined") return;
-  getStore().dispatch(refreshAccessToken(token));
-}
-
-export function setRefreshToken(token: string) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem("memo_refresh_token", token);
-}
-
+/** [AUTH] Hydrate Redux with the safe user profile returned by the BFF login response. */
 export function applyLoginResult(result: LoginResult) {
-
-  console.log("Applying login result:", result);
   getStore().dispatch(applyAuthSession(result));
-  if (result.refreshToken) {
-    setRefreshToken(result.refreshToken);
-  }
 }
 
-export function clearTokens() {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem("memo_refresh_token");
-}
-
-/** [AUTH] Unified logout — single /auth/logout endpoint. */
+/** [AUTH] Logout — calls the BFF which clears HttpOnly cookies server-side.
+ *  document.cookie cannot clear HttpOnly cookies — only this server route can. */
 export async function serverLogout() {
-  const refresh = getRefreshToken();
-
   try {
-    // apiClient automatically attaches the Authorization header via interceptors.
-    // We pass the refresh token in the body so the backend can revoke the session.
-    await apiClient.post("/auth/logout", refresh ? { refreshToken: refresh } : {});
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include', // Required so the BFF receives the HttpOnly cookies
+    });
   } catch {
-    // Ignore network errors — logout should never block the UI
-  } finally {
-    clearTokens();
+    // Ignore network errors — logout must never block the UI
   }
 }
