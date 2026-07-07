@@ -15,6 +15,7 @@ export const provisionUserSchema = z.object({
   role: z.string().min(1, "Select a role"),
   departmentId: z.string().uuid().optional(),
   staffNumber: z.string().trim().max(50, "Staff number is too long").optional(),
+  admissionNumber: z.string().trim().max(50, "Admission number is too long").optional(),
   phoneNumber: z.string().trim().max(20, "Phone number is too long").optional(),
 });
 
@@ -27,5 +28,6 @@ export const defaultProvisionUserValues: ProvisionUserFormValues = {
   role: "",
   departmentId: undefined,
   staffNumber: "",
+  admissionNumber: "",
   phoneNumber: "",
 };

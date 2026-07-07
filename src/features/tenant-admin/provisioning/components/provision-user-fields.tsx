@@ -68,7 +68,7 @@ export function ProvisionUserFields({
       <div className="sm:col-span-2">
         <FormField
           label="Email address"
-          description="Login credentials will be sent to this email."
+          description="The school code and a temporary password will be sent to this address."
           error={errors.email}
           htmlFor="email"
         >
@@ -153,7 +153,7 @@ export function ProvisionUserFields({
 
       <FormField
         label="Staff number"
-        description="Optional internal identifier."
+        description="Optional. For staff users — used as their login identifier."
         error={errors.staffNumber}
         htmlFor="staffNumber"
       >
@@ -161,6 +161,19 @@ export function ProvisionUserFields({
           id="staffNumber"
           placeholder="e.g. STF-001"
           {...register("staffNumber")}
+        />
+      </FormField>
+
+      <FormField
+        label="Admission number"
+        description="Optional. For student users — used as their login identifier."
+        error={errors.admissionNumber}
+        htmlFor="admissionNumber"
+      >
+        <Input
+          id="admissionNumber"
+          placeholder="e.g. ADM-2024-001"
+          {...register("admissionNumber")}
         />
       </FormField>
 
