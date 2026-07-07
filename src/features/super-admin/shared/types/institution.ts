@@ -17,6 +17,8 @@ export type InstitutionRecord = {
   countryCode: string;
   timezone: string;
   isActive: boolean;
+  usersActive?: number;
+  seatsActive?: number;
   createdAt: string;
   updatedAt: string;
 };
