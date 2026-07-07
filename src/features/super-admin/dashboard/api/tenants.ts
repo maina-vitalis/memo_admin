@@ -20,6 +20,8 @@ type BackendInstitution = {
   contactEmail: string;
   isActive: boolean;
   provisioningNotes: string | null;
+  usersActive?: number;
+  seatsActive?: number;
 };
 
 function subscriptionLabel(
@@ -62,9 +64,9 @@ function mapInstitution(institution: BackendInstitution): Tenant {
     subdomain: institution.subdomain,
     shortcode: institution.schoolCode,
     status: institution.status,
-    seatsActive: 0,
+    seatsActive: institution.seatsActive ?? 0,
     seatQuota: institution.seatQuota,
-    usersActive: 0,
+    usersActive: institution.usersActive ?? 0,
     subscriptionEndsLabel: label,
     subscriptionEndsVariant: variant,
     plan: institution.plan,
