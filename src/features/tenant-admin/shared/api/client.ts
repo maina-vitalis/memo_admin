@@ -39,8 +39,13 @@ export async function tenantApi<T>(
   init?: RequestInit,
 ): Promise<T> {
   const method = (init?.method ?? "GET").toUpperCase();
-  const body =
-    typeof init?.body === "string" ? JSON.parse(init.body) : init?.body;
+  const isFormData =
+    typeof FormData !== "undefined" && init?.body instanceof FormData;
+  const body = isFormData
+    ? init.body
+    : typeof init?.body === "string"
+      ? JSON.parse(init.body)
+      : init?.body;
 
   try {
     const { data: raw, status } = await apiClient.request<
@@ -49,6 +54,10 @@ export async function tenantApi<T>(
       url: path,
       method,
       data: body,
+      // The shared instance defaults to Content-Type: application/json, which
+      // would make axios try to JSON-serialize FormData instead of sending it
+      // as multipart. Clearing it lets the browser set the correct boundary.
+      headers: isFormData ? { "Content-Type": undefined } : undefined,
     });
 
     if (status === 204) return undefined as T;

@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import Link from "next/link";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, UploadIcon } from "lucide-react";
 import { useUsers } from "@/features/tenant-admin/provisioning/api/use-users";
 import { DirectoryTable } from "@/features/tenant-admin/provisioning/components/directory-table";
 import { DirectoryToolbar } from "@/features/tenant-admin/provisioning/components/directory-toolbar";
@@ -13,6 +13,8 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { usePermission } from "@/hooks/use-permission";
+import { Permission } from "@/lib/rbac/permission.enum";
 
 export function DirectoryPage() {
   const [filters, setFilters] = useState<DirectoryFilters>(
@@ -36,6 +38,7 @@ export function DirectoryPage() {
   }, []);
 
   const totalUsers = users?.length ?? 0;
+  const canBulkUpload = usePermission(Permission.PROVISION_USERS_BULK);
 
   return (
     <div className="space-y-6">
@@ -50,12 +53,22 @@ export function DirectoryPage() {
               : `${totalUsers} user${totalUsers === 1 ? "" : "s"} in your institution`}
           </p>
         </div>
-        <Button asChild className="shrink-0">
-          <Link href="/admin/directory/provision-user">
-            <PlusIcon className="mr-2 h-4 w-4" />
-            Provision user
-          </Link>
-        </Button>
+        <div className="flex shrink-0 gap-3">
+          {canBulkUpload ? (
+            <Button asChild variant="outline">
+              <Link href="/admin/directory/bulk-upload">
+                <UploadIcon className="mr-2 h-4 w-4" />
+                Bulk upload
+              </Link>
+            </Button>
+          ) : null}
+          <Button asChild>
+            <Link href="/admin/directory/provision-user">
+              <PlusIcon className="mr-2 h-4 w-4" />
+              Provision user
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {isError ? (
