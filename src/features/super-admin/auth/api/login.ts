@@ -1,32 +1,31 @@
-import apiClient from "@/lib/api/axios-client";
-import { applyLoginResult } from "@/features/auth/auth-storage";
-import type {
-  SuperAdminLoginInput,
-  SuperAdminLoginResult,
-} from "@/features/super-admin/auth/types/login";
+import { login, LoginError } from "@/features/auth/login/api/login";
+import type { LoginResult } from "@/features/auth/types";
+import type { SuperAdminLoginInput } from "@/features/super-admin/auth/types/login";
+import { Role } from "@/lib/rbac/role.enum";
 import axios from "axios";
-
-type ApiEnvelope<T> = { success: true; data: T };
 
 export async function loginSuperAdmin(
   input: SuperAdminLoginInput,
-): Promise<SuperAdminLoginResult> {
-  const { data: raw } = await apiClient.post<
-    ApiEnvelope<SuperAdminLoginResult> | SuperAdminLoginResult
-  >("/superadmin/login", {
-    email: input.email.trim().toLowerCase(),
-    password: input.password,
-  });
+): Promise<LoginResult> {
+  try {
+    const result = await login(input);
 
-  const result =
-    raw && typeof raw === "object" && "data" in raw
-      ? (raw as ApiEnvelope<SuperAdminLoginResult>).data
-      : (raw as SuperAdminLoginResult);
+    if (result.user.role !== Role.SUPER_ADMIN) {
+      throw new SuperAdminLoginError(
+        "This account is not authorized for super admin access",
+      );
+    }
 
-  // Persist tokens & hydrate Redux state via the shared auth-storage helper
-  applyLoginResult(result as Parameters<typeof applyLoginResult>[0]);
-
-  return result;
+    return result;
+  } catch (err) {
+    if (err instanceof SuperAdminLoginError) throw err;
+    if (err instanceof LoginError) {
+      throw new SuperAdminLoginError(err.message);
+    }
+    throw new SuperAdminLoginError(
+      extractAxiosErrorMessage(err, "Unable to sign in. Try again."),
+    );
+  }
 }
 
 export class SuperAdminLoginError extends Error {
@@ -36,9 +35,14 @@ export class SuperAdminLoginError extends Error {
   }
 }
 
-export function extractAxiosErrorMessage(err: unknown, fallback: string): string {
+export function extractAxiosErrorMessage(
+  err: unknown,
+  fallback: string,
+): string {
   if (axios.isAxiosError(err)) {
-    const data = err.response?.data as { message?: string | string[] } | undefined;
+    const data = err.response?.data as
+      | { message?: string | string[] }
+      | undefined;
     const message = Array.isArray(data?.message)
       ? data.message.join(", ")
       : data?.message;

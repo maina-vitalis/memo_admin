@@ -54,8 +54,6 @@ export async function completeAccountSetup(
         : (raw as CompleteSetupResponse);
 
     return {
-      accessToken: result.accessToken,
-      refreshToken: result.refreshToken,
       tokenType: result.tokenType,
       expiresIn: result.expiresIn,
       user: {
@@ -70,7 +68,8 @@ export async function completeAccountSetup(
     };
   } catch (err) {
     if (axios.isAxiosError(err)) {
-      const data = err.response?.data as { message?: string | string[] } | undefined;
+      const data = err.response?.data as
+        { message?: string | string[] } | undefined;
       const message = Array.isArray(data?.message)
         ? data.message.join(", ")
         : (data?.message ?? "Failed to complete account setup");

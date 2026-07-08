@@ -8,7 +8,7 @@
  *   timing if needed in future, though currently handled by cookie MaxAge).
  */
 
-import { Role } from '@/lib/rbac/role.enum';
+import { Role } from "@/lib/rbac/role.enum";
 
 export type LoginInput = {
   email: string;
@@ -32,7 +32,7 @@ export type InstitutionSummary = {
 
 /** Safe login result — tokens intentionally absent (live in HttpOnly cookies). */
 export type LoginResult = {
-  tokenType?: 'Bearer';
+  tokenType?: "Bearer";
   expiresIn?: number;
   user: AuthUser;
   institution?: InstitutionSummary | null;
@@ -40,7 +40,7 @@ export type LoginResult = {
 };
 
 export function getPostLoginPath(role: Role): string {
-  return role === Role.SUPER_ADMIN ? '/super-admin' : '/admin';
+  return role === Role.SUPER_ADMIN ? "/super-admin" : "/admin";
 }
 
 export function isSuperAdmin(role: Role | null): boolean {
