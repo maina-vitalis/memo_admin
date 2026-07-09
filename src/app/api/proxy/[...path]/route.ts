@@ -5,12 +5,13 @@ const BACKEND_URL = process.env.BACKEND_URL; // server-only, NOT NEXT_PUBLIC_*
 
 async function proxyRequest(
   request: NextRequest,
-  { params }: { params: { path: string[] } },
+  { params }: { params: Promise<{ path: string[] }> },
 ) {
   const accessToken = request.cookies.get("memo_access")?.value;
 
   // Rebuild the target URL: /api/proxy/institutions -> {BACKEND_URL}/api/v1/institutions
-  const path = params.path.join("/");
+  const { path: pathSegments } = await params;
+  const path = pathSegments.join("/");
   const search = request.nextUrl.search; // preserves ?query=params
   const targetUrl = `${BACKEND_URL}/api/v1/${path}${search}`;
 
