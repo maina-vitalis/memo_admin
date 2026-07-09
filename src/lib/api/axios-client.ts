@@ -25,22 +25,21 @@ import axios, {
   type AxiosError,
   type InternalAxiosRequestConfig,
   type AxiosResponse,
-} from 'axios';
-import { API_BASE_URL } from '@/lib/api/config';
-import { clearAuth } from '@/features/auth/auth-storage';
-import { getStore } from '@/store/store';
-import { logout } from '@/features/auth/store/auth-slice';
+} from "axios";
+import { clearAuth } from "@/features/auth/auth-storage";
+import { getStore } from "@/store/store";
+import { logout } from "@/features/auth/store/auth-slice";
 
 // ---------------------------------------------------------------------------
 // Main client — withCredentials sends HttpOnly cookies automatically
 // ---------------------------------------------------------------------------
 
 export const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: "/api/proxy",
   withCredentials: true, // Browser sends memo_access HttpOnly cookie on every request
   headers: {
-    Accept: 'application/json',
-    'Content-Type': 'application/json',
+    Accept: "application/json",
+    "Content-Type": "application/json",
   },
   timeout: 30_000,
 });
@@ -55,7 +54,7 @@ export const apiClient = axios.create({
 const refreshClient = axios.create({
   // No baseURL — /api/auth/refresh is a Next.js Route Handler (BFF),
   // not a NestJS endpoint. Relative URL resolves against the browser's origin.
-  headers: { 'Content-Type': 'application/json' },
+  headers: { "Content-Type": "application/json" },
   withCredentials: true, // Required so the BFF can read the memo_refresh cookie
   timeout: 15_000,
 });
@@ -93,9 +92,9 @@ function rejectQueueWith(err: unknown) {
 async function doTokenRefresh(): Promise<void> {
   // BFF reads the HttpOnly memo_refresh cookie itself.
   // We send an empty body — nothing needs to be passed from JS.
-  const res = await refreshClient.post('/api/auth/refresh', {});
+  const res = await refreshClient.post("/api/auth/refresh", {});
   if (res.status !== 200) {
-    throw new Error('Refresh failed');
+    throw new Error("Refresh failed");
   }
   // New cookies are set by the BFF in the Set-Cookie response headers.
   // The browser updates them automatically — no JS action needed.
@@ -106,11 +105,11 @@ async function doTokenRefresh(): Promise<void> {
 // ---------------------------------------------------------------------------
 
 function handleAuthFailure() {
-  rejectQueueWith(new Error('Session expired'));
+  rejectQueueWith(new Error("Session expired"));
   getStore().dispatch(logout());
   clearAuth();
-  if (typeof window !== 'undefined') {
-    window.location.href = '/login';
+  if (typeof window !== "undefined") {
+    window.location.href = "/login";
   }
 }
 
@@ -118,13 +117,11 @@ function handleAuthFailure() {
 // Request interceptor — no token injection needed; cookie is sent automatically.
 // ---------------------------------------------------------------------------
 
-apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    // Nothing to do — the browser sends memo_access automatically via
-    // withCredentials. Authorization header injection is intentionally removed.
-    return config;
-  },
-);
+apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  // Nothing to do — the browser sends memo_access automatically via
+  // withCredentials. Authorization header injection is intentionally removed.
+  return config;
+});
 
 // ---------------------------------------------------------------------------
 // Response interceptor — on 401: trigger BFF refresh + retry original request
@@ -139,7 +136,7 @@ apiClient.interceptors.response.use(
     const status = error.response?.status;
 
     // If the BFF refresh endpoint itself returned 401 → session is dead.
-    if (original?.url?.includes('/api/auth/refresh')) {
+    if (original?.url?.includes("/api/auth/refresh")) {
       handleAuthFailure();
       return Promise.reject(error);
     }
