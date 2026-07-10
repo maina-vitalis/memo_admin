@@ -1,14 +1,11 @@
-import apiClient from "@/lib/api/axios-client";
-import type { CompleteAccountSetupInput } from "@/features/auth/account-setup/types/account-setup";
-import type { LoginResult } from "@/features/auth/types";
-import { Role } from "@/lib/rbac/role.enum";
-import axios from "axios";
+import { applyLoginResult } from '@/features/auth/auth-storage';
+import type { CompleteAccountSetupInput } from '@/features/auth/account-setup/types/account-setup';
+import type { LoginResult } from '@/features/auth/types';
+import { Role } from '@/lib/rbac/role.enum';
 
 type CompleteSetupResponse = {
-  accessToken: string;
-  refreshToken: string;
-  tokenType: "Bearer";
-  expiresIn: number;
+  tokenType?: 'Bearer';
+  expiresIn?: number;
   user: {
     id: string;
     email: string;
@@ -24,59 +21,62 @@ type CompleteSetupResponse = {
   };
 };
 
-type ApiEnvelope<T> = { success: true; data: T };
-
 export class CompleteAccountSetupError extends Error {
   constructor(
     message: string,
     readonly status?: number,
   ) {
     super(message);
-    this.name = "CompleteAccountSetupError";
+    this.name = 'CompleteAccountSetupError';
   }
 }
 
 export async function completeAccountSetup(
   input: CompleteAccountSetupInput,
 ): Promise<LoginResult> {
-  try {
-    const { data: raw } = await apiClient.post<
-      ApiEnvelope<CompleteSetupResponse> | CompleteSetupResponse
-    >("/auth/setup/complete", {
+  const res = await fetch('/api/auth/setup/complete', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
       token: input.token,
       password: input.password,
-      deviceType: "web",
-    });
+      deviceType: 'web',
+    }),
+  });
 
-    const result =
-      raw && typeof raw === "object" && "data" in raw
-        ? (raw as ApiEnvelope<CompleteSetupResponse>).data
-        : (raw as CompleteSetupResponse);
-
-    return {
-      tokenType: result.tokenType,
-      expiresIn: result.expiresIn,
-      user: {
-        id: result.user.id,
-        email: result.user.email,
-        firstName: result.user.firstName,
-        lastName: result.user.lastName,
-        role: result.user.role ?? Role.INSTITUTION_ADMIN,
-        institutionId: result.user.institutionId,
-      },
-      institution: result.institution ?? null,
+  if (!res.ok) {
+    const errBody = (await res.json().catch(() => ({}))) as {
+      message?: string | string[];
     };
-  } catch (err) {
-    if (axios.isAxiosError(err)) {
-      const data = err.response?.data as
-        { message?: string | string[] } | undefined;
-      const message = Array.isArray(data?.message)
-        ? data.message.join(", ")
-        : (data?.message ?? "Failed to complete account setup");
-      throw new CompleteAccountSetupError(message, err.response?.status);
-    }
-    throw new CompleteAccountSetupError(
-      err instanceof Error ? err.message : "Failed to complete account setup",
-    );
+    const raw = errBody?.message;
+    const message = Array.isArray(raw)
+      ? raw.join(', ')
+      : (raw ?? 'Failed to complete account setup');
+    throw new CompleteAccountSetupError(message, res.status);
   }
+
+  const json = (await res.json()) as
+    | { data?: CompleteSetupResponse }
+    | CompleteSetupResponse;
+
+  const result =
+    'data' in json && json.data ? json.data : (json as CompleteSetupResponse);
+
+  const loginResult: LoginResult = {
+    tokenType: result.tokenType,
+    expiresIn: result.expiresIn,
+    user: {
+      id: result.user.id,
+      email: result.user.email,
+      firstName: result.user.firstName,
+      lastName: result.user.lastName,
+      role: result.user.role ?? Role.INSTITUTION_ADMIN,
+      institutionId: result.user.institutionId,
+    },
+    institution: result.institution ?? null,
+  };
+
+  applyLoginResult(loginResult);
+  return loginResult;
 }
