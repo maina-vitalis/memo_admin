@@ -2,9 +2,11 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { DownloadIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useBulkUploadStudents } from "@/features/tenant-admin/provisioning/api/use-bulk-upload-students";
 import type { BulkUploadResult } from "@/features/tenant-admin/provisioning/types/bulk-upload";
+import { downloadRosterTemplate } from "@/features/tenant-admin/provisioning/utils/export-roster-template";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,6 +60,15 @@ export function BulkUploadForm() {
     }
   }
 
+  function handleDownloadTemplate() {
+    try {
+      downloadRosterTemplate();
+      toast.success("Template downloaded. Fill it in and upload when ready.");
+    } catch {
+      toast.error("Could not download the template. Please try again.");
+    }
+  }
+
   function handleReset() {
     setSelectedFile(null);
     setResult(null);
@@ -96,6 +107,28 @@ export function BulkUploadForm() {
           </p>
         </CardHeader>
         <CardContent className="space-y-4 pt-6">
+          <div className="flex flex-col gap-3 rounded-lg border border-dashed bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">
+                Need the roster format?
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Download the Excel template, share it with your registry team,
+                then upload the completed file below.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleDownloadTemplate}
+              disabled={uploadMutation.isPending}
+              className="shrink-0"
+            >
+              <DownloadIcon className="h-4 w-4" />
+              Download Excel template
+            </Button>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="roster-file">Roster file</Label>
             <Input
