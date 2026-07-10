@@ -40,13 +40,34 @@ export type LoginResult = {
 };
 
 export function getPostLoginPath(role: Role): string {
-  return role === Role.SUPER_ADMIN ? "/super-admin" : "/admin";
+  if (role === Role.SUPER_ADMIN) return "/super-admin";
+  if (role === Role.INSTITUTION_ADMIN) return "/admin";
+  throw new PortalAccessError();
+}
+
+export class PortalAccessError extends Error {
+  constructor(
+    message = "This account is not authorized to access the admin portal. Please use the mobile app.",
+  ) {
+    super(message);
+    this.name = "PortalAccessError";
+  }
+}
+
+export function canAccessAdminPortal(role: Role): boolean {
+  return role === Role.SUPER_ADMIN || role === Role.INSTITUTION_ADMIN;
 }
 
 export function isSuperAdmin(role: Role | null): boolean {
   return role === Role.SUPER_ADMIN;
 }
 
+/** Only institution admins may use the /admin tenant console. */
+export function isTenantAdminPortalRole(role: Role | null): boolean {
+  return role === Role.INSTITUTION_ADMIN;
+}
+
+/** @deprecated Use isTenantAdminPortalRole for /admin access checks. */
 export function isInstitutionPortalRole(role: Role | null): boolean {
-  return role !== null && role !== Role.SUPER_ADMIN;
+  return isTenantAdminPortalRole(role);
 }

@@ -1,6 +1,7 @@
-import { applyLoginResult } from '@/features/auth/auth-storage';
+import { applyLoginResult, serverLogout } from '@/features/auth/auth-storage';
 import type { CompleteAccountSetupInput } from '@/features/auth/account-setup/types/account-setup';
 import type { LoginResult } from '@/features/auth/types';
+import { PortalAccessError } from '@/features/auth/types';
 import { Role } from '@/lib/rbac/role.enum';
 
 type CompleteSetupResponse = {
@@ -76,6 +77,11 @@ export async function completeAccountSetup(
     },
     institution: result.institution ?? null,
   };
+
+  if (loginResult.user.role !== Role.INSTITUTION_ADMIN) {
+    await serverLogout();
+    throw new CompleteAccountSetupError(new PortalAccessError().message);
+  }
 
   applyLoginResult(loginResult);
   return loginResult;

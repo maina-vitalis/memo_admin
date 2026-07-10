@@ -46,14 +46,19 @@ export function proxy(request: NextRequest) {
   }
 
   if (pathname.startsWith("/super-admin") && payload.role !== Role.SUPER_ADMIN) {
-    return NextResponse.redirect(new URL("/admin", request.url));
+    if (payload.role === Role.INSTITUTION_ADMIN) {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (
-    pathname.startsWith("/admin") &&
-    payload.role === Role.SUPER_ADMIN
-  ) {
-    return NextResponse.redirect(new URL("/super-admin", request.url));
+  if (pathname.startsWith("/admin")) {
+    if (payload.role === Role.SUPER_ADMIN) {
+      return NextResponse.redirect(new URL("/super-admin", request.url));
+    }
+    if (payload.role !== Role.INSTITUTION_ADMIN) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
   }
 
   return NextResponse.next();

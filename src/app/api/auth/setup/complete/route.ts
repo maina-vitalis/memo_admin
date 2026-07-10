@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { setAuthCookies } from '@/lib/api/set-auth-cookies';
+import { Role } from '@/lib/rbac/role.enum';
+
+const PORTAL_DENIED_MESSAGE =
+  'This account is not authorized to access the admin portal. Please use the mobile app.';
 
 /**
  * [BFF] POST /api/auth/setup/complete
  *
  * Completes institution-admin account setup, sets HttpOnly cookies from the
  * returned tokens, and returns only the safe user profile to the browser.
- * Mirrors /api/auth/login so post-provisioning redirects to /admin work.
  */
 
 const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:5000';
@@ -28,6 +31,10 @@ export async function POST(request: NextRequest) {
 
   const payload = json?.data ?? json;
   const { accessToken, refreshToken, expiresIn, ...safeData } = payload;
+
+  if (safeData?.user?.role !== Role.INSTITUTION_ADMIN) {
+    return NextResponse.json({ message: PORTAL_DENIED_MESSAGE }, { status: 403 });
+  }
 
   if (!accessToken) {
     return NextResponse.json(

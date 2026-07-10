@@ -12,8 +12,9 @@
  */
 
 import axios from 'axios';
-import { applyLoginResult } from '@/features/auth/auth-storage';
+import { applyLoginResult, serverLogout } from '@/features/auth/auth-storage';
 import type { LoginInput, LoginResult } from '@/features/auth/types';
+import { canAccessAdminPortal, PortalAccessError } from '@/features/auth/types';
 import { Role } from '@/lib/rbac/role.enum';
 
 export class LoginError extends Error {
@@ -67,7 +68,9 @@ export async function login(input: LoginInput): Promise<LoginResult> {
     });
 
     if (!res.ok) {
-      const errBody = await res.json().catch(() => ({})) as { message?: string | string[] };
+      const errBody = (await res.json().catch(() => ({}))) as {
+        message?: string | string[];
+      };
       const raw = errBody?.message;
       const message = Array.isArray(raw) ? raw[0] : raw;
       throw new LoginError(message ?? 'Invalid credentials');
@@ -92,6 +95,11 @@ export async function login(input: LoginInput): Promise<LoginResult> {
       institution: data.institution ?? null,
       mustChangePassword: data.mustChangePassword,
     };
+
+    if (!canAccessAdminPortal(result.user.role)) {
+      await serverLogout();
+      throw new LoginError(new PortalAccessError().message);
+    }
 
     // Hydrate Redux with user profile (no token — it's in the HttpOnly cookie)
     applyLoginResult(result);

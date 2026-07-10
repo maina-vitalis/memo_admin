@@ -16,7 +16,7 @@ type TenantAdminAuthGuardProps = {
   children: React.ReactNode;
 };
 
-/** [AUTH] Protects /admin routes — institution-scoped roles only. */
+/** [AUTH] Protects /admin routes — INSTITUTION_ADMIN only. */
 export function TenantAdminAuthGuard({ children }: TenantAdminAuthGuardProps) {
   const router = useRouter();
   const hydrated = useAppSelector(selectAuthHydrated);

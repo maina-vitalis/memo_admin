@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { LoginForm } from "@/features/auth/login/components/login-form";
 import { useAuth } from "@/features/auth/hooks/use-auth";
-import { getPostLoginPath } from "@/features/auth/types";
+import { getPostLoginPath, canAccessAdminPortal } from "@/features/auth/types";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
@@ -25,6 +25,7 @@ export function LoginCard() {
   // Redirect already-authenticated users to their respective dashboard
   useEffect(() => {
     if (!hydrated || !isAuthenticated || !role) return;
+    if (!canAccessAdminPortal(role)) return;
     router.replace(getPostLoginPath(role));
   }, [hydrated, isAuthenticated, role, router]);
 

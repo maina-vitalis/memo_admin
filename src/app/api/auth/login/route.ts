@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { setAuthCookies } from '@/lib/api/set-auth-cookies';
+import { Role } from '@/lib/rbac/role.enum';
+
+const PORTAL_DENIED_MESSAGE =
+  'This account is not authorized to access the admin portal. Please use the mobile app.';
+
+function isPortalRole(role: unknown): role is Role {
+  return role === Role.SUPER_ADMIN || role === Role.INSTITUTION_ADMIN;
+}
 
 /**
  * [BFF] POST /api/auth/login
@@ -7,11 +15,7 @@ import { setAuthCookies } from '@/lib/api/set-auth-cookies';
  * Receives credentials from the browser, forwards them to the NestJS backend
  * server-to-server, then sets HttpOnly cookies with the returned tokens.
  *
- * The browser never sees the raw token values — they live in HttpOnly cookies
- * that are inaccessible to JavaScript (XSS-proof).
- *
- * Safe payload (user profile, institution, mustChangePassword, tokenType) is
- * returned in the response body so Redux can hydrate non-sensitive UI state.
+ * Only SUPER_ADMIN and INSTITUTION_ADMIN may sign in to this web portal.
  */
 
 const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:5000';
@@ -31,11 +35,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(json, { status: backendRes.status });
   }
 
-  // Backend wraps: { success: true, data: { accessToken, refreshToken, ... } }
   const payload = json?.data ?? json;
-
-  // Strip raw tokens — they must never reach the browser in the response body.
   const { accessToken, refreshToken, expiresIn, ...safeData } = payload;
+  const role = safeData?.user?.role;
+
+  if (!isPortalRole(role)) {
+    return NextResponse.json({ message: PORTAL_DENIED_MESSAGE }, { status: 403 });
+  }
 
   const response = NextResponse.json({ data: safeData });
   setAuthCookies(response, { accessToken, refreshToken, expiresIn });

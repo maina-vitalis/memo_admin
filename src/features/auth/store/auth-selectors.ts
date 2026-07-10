@@ -9,9 +9,8 @@
  */
 
 import { createSelector } from '@reduxjs/toolkit';
-import { Role } from '@/lib/rbac/role.enum';
 import type { RootState } from '@/store/store';
-import { isInstitutionPortalRole, isSuperAdmin } from '@/features/auth/types';
+import { isSuperAdmin, isTenantAdminPortalRole } from '@/features/auth/types';
 
 export const selectAuthHydrated = (state: RootState) => state.auth.hydrated;
 export const selectAuthRole = (state: RootState) => state.auth.role;
@@ -52,11 +51,7 @@ export const selectIsSuperAdminAuthenticated = (state: RootState) =>
   Boolean(state.auth.id && isSuperAdmin(state.auth.role));
 
 export const selectIsInstitutionAdminAuthenticated = (state: RootState) =>
-  Boolean(
-    state.auth.id &&
-    isInstitutionPortalRole(state.auth.role) &&
-    state.auth.role === Role.INSTITUTION_ADMIN,
-  );
+  Boolean(state.auth.id && isTenantAdminPortalRole(state.auth.role));
 
 export const selectIsTenantPortalAuthenticated = (state: RootState) =>
-  Boolean(state.auth.id && isInstitutionPortalRole(state.auth.role));
+  selectIsInstitutionAdminAuthenticated(state);
