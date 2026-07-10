@@ -45,7 +45,7 @@ export function ProvisionUserForm() {
       const result = await provisionMutation.mutateAsync(values);
 
       toast.success(
-        `${result.firstName} ${result.lastName} has been provisioned. Login credentials (school code + temporary password) sent to ${result.email}`,
+        `${result.firstName} ${result.lastName} has been provisioned. Login credentials have been emailed to ${result.email}.`,
       );
       router.push("/admin/directory");
     } catch (error) {
@@ -67,8 +67,9 @@ export function ProvisionUserForm() {
             <CardHeader className="border-b">
               <CardTitle>User details</CardTitle>
               <CardDescription>
-                Create a new user account. The school code and a temporary
-                password will be emailed so they can log in via the mobile app.
+                Provision a trainee account. Credentials (school code, admission
+                number, and temporary password) will be emailed to the student
+                immediately.
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
@@ -95,8 +96,9 @@ export function ProvisionUserForm() {
                 </p>
               ) : (
                 <FieldLegend className="mb-0 text-sm font-normal text-muted-foreground">
-                  A temporary password and the school code will be emailed to
-                  the user. They must change the password on first login.
+                  The student will receive their school code, admission number,
+                  and temporary password by email. They must set a new password
+                  on first login.
                 </FieldLegend>
               )}
 

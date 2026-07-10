@@ -1,15 +1,18 @@
-import { Role } from "@/lib/rbac/role.enum";
+export type ProvisionUserPayload = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  admissionNumber: string;
+  departmentId?: string;
+  phoneNumber?: string;
+};
 
-export interface ProvisionedUser {
+export type ProvisionUserResult = {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
-  role: Role;
-  departmentId?: string;
-  staffNumber?: string;
-  phoneNumber?: string;
-  mustChangePassword: boolean;
-  isActive: boolean;
-  createdAt: string;
-}
+  admissionNumber: string;
+};
+
+export type ProvisionedUser = ProvisionUserResult;

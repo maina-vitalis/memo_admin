@@ -26,8 +26,7 @@ function filterUsers(users: User[], filters: DirectoryFilters): User[] {
       const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
       const matchesSearch =
         fullName.includes(query) ||
-        user.email.toLowerCase().includes(query) ||
-        (user.staffNumber?.toLowerCase().includes(query) ?? false) ||
+        (user.email?.toLowerCase().includes(query) ?? false) ||
         (user.admissionNumber?.toLowerCase().includes(query) ?? false);
 
       if (!matchesSearch) return false;
@@ -41,9 +40,9 @@ function filterUsers(users: User[], filters: DirectoryFilters): User[] {
     }
 
     if (filters.status === "active" && !user.isActive) return false;
-    if (filters.status === "inactive" && user.isActive) return false;
+    return !(filters.status === "inactive" && user.isActive);
 
-    return true;
+
   });
 }
 

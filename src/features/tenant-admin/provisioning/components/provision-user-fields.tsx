@@ -4,7 +4,6 @@ import type { Control, FieldErrors, UseFormRegister } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import type { ProvisionUserFormValues } from "@/features/tenant-admin/provisioning/schemas/provision-user.schema";
 import type { Department } from "@/features/tenant-admin/provisioning/api/get-departments";
-import { Role } from "@/lib/rbac/role.enum";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,21 +20,6 @@ type ProvisionUserFieldsProps = {
   errors: FieldErrors<ProvisionUserFormValues>;
   departments: Department[];
 };
-
-function formatRoleLabel(role: string): string {
-  return role
-    .split("_")
-    .map((part) => part.charAt(0) + part.slice(1).toLowerCase())
-    .join(" ");
-}
-
-/**
- * All roles a tenant admin can provision, in hierarchy order.
- * SUPER_ADMIN is excluded — it's a platform-level role, not tenant-assignable.
- */
-const ASSIGNABLE_ROLES: Role[] = Object.values(Role).filter(
-  (role) => role !== Role.SUPER_ADMIN,
-);
 
 export function ProvisionUserFields({
   control,
@@ -74,14 +58,14 @@ export function ProvisionUserFields({
       <div className="sm:col-span-2">
         <FormField
           label="Email address"
-          description="The school code and a temporary password will be sent to this address."
+          description="Login credentials will be emailed to this address immediately after provisioning."
           error={errors.email}
           htmlFor="email"
         >
           <Input
             id="email"
             type="email"
-            placeholder="user@institution.ac.ke"
+            placeholder="student@institution.ac.ke"
             aria-invalid={!!errors.email}
             {...register("email")}
           />
@@ -89,31 +73,16 @@ export function ProvisionUserFields({
       </div>
 
       <FormField
-        label="Role"
-        description="Determines permissions and access level."
-        error={errors.role}
+        label="Admission number"
+        description="Used as the student's login identifier. Initial password will match this value."
+        error={errors.admissionNumber}
+        htmlFor="admissionNumber"
       >
-        <Controller
-          name="role"
-          control={control}
-          render={({ field }) => (
-            <Select onValueChange={field.onChange} value={field.value || ""}>
-              <SelectTrigger
-                id="role"
-                aria-invalid={!!errors.role}
-                className="w-full"
-              >
-                <SelectValue placeholder="Select a role" />
-              </SelectTrigger>
-              <SelectContent>
-                {ASSIGNABLE_ROLES.map((role) => (
-                  <SelectItem key={role} value={role}>
-                    {formatRoleLabel(role)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+        <Input
+          id="admissionNumber"
+          placeholder="e.g. ADM-2024-001"
+          aria-invalid={!!errors.admissionNumber}
+          {...register("admissionNumber")}
         />
       </FormField>
 
@@ -148,32 +117,6 @@ export function ProvisionUserFields({
               </SelectContent>
             </Select>
           )}
-        />
-      </FormField>
-
-      <FormField
-        label="Staff number"
-        description="Optional. For staff users — used as their login identifier."
-        error={errors.staffNumber}
-        htmlFor="staffNumber"
-      >
-        <Input
-          id="staffNumber"
-          placeholder="e.g. STF-001"
-          {...register("staffNumber")}
-        />
-      </FormField>
-
-      <FormField
-        label="Admission number"
-        description="Optional. For student users — used as their login identifier."
-        error={errors.admissionNumber}
-        htmlFor="admissionNumber"
-      >
-        <Input
-          id="admissionNumber"
-          placeholder="e.g. ADM-2024-001"
-          {...register("admissionNumber")}
         />
       </FormField>
 

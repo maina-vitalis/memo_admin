@@ -12,10 +12,12 @@ export const provisionUserSchema = z.object({
     .min(2, "Last name must be at least 2 characters")
     .max(100, "Last name is too long"),
   email: z.string().trim().email("Enter a valid email address"),
-  role: z.string().min(1, "Select a role"),
+  admissionNumber: z
+    .string()
+    .trim()
+    .min(1, "Admission number is required")
+    .max(50, "Admission number is too long"),
   departmentId: z.string().uuid().optional(),
-  staffNumber: z.string().trim().max(50, "Staff number is too long").optional(),
-  admissionNumber: z.string().trim().max(50, "Admission number is too long").optional(),
   phoneNumber: z.string().trim().max(20, "Phone number is too long").optional(),
 });
 
@@ -25,9 +27,7 @@ export const defaultProvisionUserValues: ProvisionUserFormValues = {
   firstName: "",
   lastName: "",
   email: "",
-  role: "",
-  departmentId: undefined,
-  staffNumber: "",
   admissionNumber: "",
+  departmentId: undefined,
   phoneNumber: "",
 };

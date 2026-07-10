@@ -7,7 +7,7 @@ export interface UserInRole {
   email: string;
   role: string;
   departmentId?: string;
-  staffNumber?: string;
+  admissionNumber?: string;
   phoneNumber?: string;
   isActive: boolean;
   mustChangePassword: boolean;

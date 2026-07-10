@@ -15,7 +15,7 @@ function toUserInRole(user: User): UserInRole {
     email: user.email,
     role: user.role ?? "",
     departmentId: user.departmentId,
-    staffNumber: user.staffNumber,
+    admissionNumber: user.admissionNumber,
     phoneNumber: user.phoneNumber,
     isActive: user.isActive,
     mustChangePassword: user.mustChangePassword,
@@ -48,11 +48,11 @@ export function getUsersColumns(): ColumnDef<User>[] {
       cell: ({ row }) => <UserRoleSelect user={row.original} />,
     },
     {
-      accessorKey: "staffNumber",
-      header: "Staff Number",
+      accessorKey: "admissionNumber",
+      header: "Admission Number",
       cell: ({ row }) => (
         <span className="text-muted-foreground">
-          {row.original.staffNumber || "—"}
+          {row.original.admissionNumber || "—"}
         </span>
       ),
     },

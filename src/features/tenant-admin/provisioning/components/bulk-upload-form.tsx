@@ -46,7 +46,7 @@ export function BulkUploadForm() {
 
       if (uploadResult.createdCount > 0) {
         toast.success(
-          `Created ${uploadResult.createdCount} account${uploadResult.createdCount === 1 ? "" : "s"}. Students log in with their admission number as both username and temporary password; staff receive their credentials by email.`,
+          `Created ${uploadResult.createdCount} trainee account${uploadResult.createdCount === 1 ? "" : "s"}. Students log in with their school code, admission number, and admission number as the initial password.`,
         );
       } else {
         toast.error("No accounts were created — check the row-by-row results below.");
@@ -73,25 +73,26 @@ export function BulkUploadForm() {
         <CardHeader className="border-b">
           <CardTitle>Upload roster</CardTitle>
           <CardDescription>
-            Upload an Excel file (.xlsx or .xls) with one row per person.
-            Every row needs <strong>First Name</strong> /{" "}
-            <strong>Last Name</strong> plus an <strong>Admission Number</strong>{" "}
-            or <strong>Staff Number</strong> as identifier.
+            Upload an Excel file (.xlsx or .xls) with one row per trainee.
+            Every row needs <strong>First Name</strong>,{" "}
+            <strong>Last Name</strong>, and an <strong>Admission Number</strong>.
           </CardDescription>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
             <li>
-              Leave <strong>Role</strong> blank → creates a student. Email is
-              optional; they log in with their identifier as both username
-              and temporary password.
+              All provisioned accounts are trainees. Assign other roles later
+              from the directory.
             </li>
             <li>
-              Set <strong>Role</strong> (e.g. TRAINER, HOD, PRINCIPAL) →
-              creates a staff account instead. Email is then required —
-              credentials are sent to it.
+              <strong>Email</strong> is optional in the template and stored for
+              future use — credentials are not emailed during bulk upload.
+            </li>
+            <li>
+              Initial password equals the admission number. Students must reset
+              it on first login.
             </li>
           </ul>
           <p className="mt-2 text-sm text-muted-foreground">
-            Phone Number and Department columns are optional either way.
+            Phone Number and Department columns are optional.
           </p>
         </CardHeader>
         <CardContent className="space-y-4 pt-6">
@@ -126,7 +127,7 @@ export function BulkUploadForm() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Row</TableHead>
-                        <TableHead>Identifier</TableHead>
+                        <TableHead>Admission Number</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Reason</TableHead>
                       </TableRow>

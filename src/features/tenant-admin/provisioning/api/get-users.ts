@@ -8,7 +8,6 @@ export interface User {
   role?: string;
   roleId?: string;
   departmentId?: string;
-  staffNumber?: string;
   admissionNumber?: string;
   phoneNumber?: string;
   isActive: boolean;
