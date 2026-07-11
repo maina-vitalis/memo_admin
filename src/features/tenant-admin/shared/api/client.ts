@@ -36,7 +36,7 @@ function extractMessage(
 
 export async function tenantApi<T>(
   path: string,
-  init?: RequestInit,
+  init?: RequestInit & { timeoutMs?: number },
 ): Promise<T> {
   const method = (init?.method ?? "GET").toUpperCase();
   const isFormData =
@@ -58,6 +58,7 @@ export async function tenantApi<T>(
       // would make axios try to JSON-serialize FormData instead of sending it
       // as multipart. Clearing it lets the browser set the correct boundary.
       headers: isFormData ? { "Content-Type": undefined } : undefined,
+      timeout: init?.timeoutMs,
     });
 
     if (status === 204) return undefined as T;

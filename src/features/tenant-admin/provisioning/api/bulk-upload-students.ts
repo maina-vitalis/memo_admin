@@ -10,5 +10,8 @@ export async function bulkUploadStudents(
   return tenantApi<BulkUploadResult>("/users/bulk-upload", {
     method: "POST",
     body: formData,
+    // Large rosters can take longer than the default 30s client timeout
+    // even with parallelized password hashing on the backend.
+    timeoutMs: 120_000,
   });
 }

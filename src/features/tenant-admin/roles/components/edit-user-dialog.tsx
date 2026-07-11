@@ -7,6 +7,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { useUpdateUser } from "@/features/tenant-admin/roles/api/use-update-user";
 import type { UserInRole } from "@/features/tenant-admin/roles/api/get-users";
+import { useDepartments } from "@/features/tenant-admin/provisioning/api/use-departments";
 import {
   ASSIGNABLE_ROLES,
   formatRoleLabel,
@@ -37,6 +38,7 @@ const updateUserSchema = z.object({
   firstName: z.string().trim().min(2, "First name must be at least 2 characters"),
   lastName: z.string().trim().min(2, "Last name must be at least 2 characters"),
   role: z.string().min(1, "Select a role"),
+  departmentId: z.string().optional(),
   phoneNumber: z.string().trim().optional(),
 });
 
@@ -49,6 +51,7 @@ interface EditUserDialogProps {
 export function EditUserDialog({ user }: EditUserDialogProps) {
   const [open, setOpen] = useState(false);
   const updateUserMutation = useUpdateUser();
+  const { data: departments } = useDepartments();
 
   const {
     control,
@@ -61,6 +64,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
+      departmentId: user.departmentId || "",
       phoneNumber: user.phoneNumber || "",
     },
   });
@@ -73,6 +77,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
           firstName: values.firstName,
           lastName: values.lastName,
           role: values.role,
+          departmentId: values.departmentId || undefined,
           phoneNumber: values.phoneNumber || undefined,
         },
       });
@@ -151,6 +156,34 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
             {errors.role && (
               <p className="text-sm text-destructive">{errors.role.message}</p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="departmentId">Department</Label>
+            <Controller
+              name="departmentId"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value || ""}>
+                  <SelectTrigger id="departmentId" className="w-full">
+                    <SelectValue placeholder="Select a department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(departments ?? []).length === 0 ? (
+                      <div className="px-2 py-6 text-center text-sm text-muted-foreground">
+                        No departments available
+                      </div>
+                    ) : (
+                      (departments ?? []).map((dept) => (
+                        <SelectItem key={dept.id} value={dept.id}>
+                          {dept.code ? `${dept.name} (${dept.code})` : dept.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
 
           <div className="space-y-2">

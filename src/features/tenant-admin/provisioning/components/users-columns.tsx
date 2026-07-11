@@ -7,6 +7,8 @@ import { UserRoleSelect } from "@/features/tenant-admin/provisioning/components/
 import { EditUserDialog } from "@/features/tenant-admin/roles/components/edit-user-dialog";
 import type { UserInRole } from "@/features/tenant-admin/roles/api/get-users";
 
+type DepartmentLookup = Record<string, string>;
+
 function toUserInRole(user: User): UserInRole {
   return {
     id: user.id,
@@ -24,7 +26,9 @@ function toUserInRole(user: User): UserInRole {
   };
 }
 
-export function getUsersColumns(): ColumnDef<User>[] {
+export function getUsersColumns(
+  departmentsById: DepartmentLookup = {},
+): ColumnDef<User>[] {
   return [
     {
       id: "name",
@@ -101,13 +105,13 @@ export function getUsersColumns(): ColumnDef<User>[] {
       ),
     },
     {
-      accessorKey: "createdAt",
-      header: "Joined",
+      id: "department",
+      header: "Department",
       cell: ({ row }) => (
         <span className="text-muted-foreground">
-          {formatDistanceToNow(new Date(row.original.createdAt), {
-            addSuffix: true,
-          })}
+          {(row.original.departmentId &&
+            departmentsById[row.original.departmentId]) ||
+            "—"}
         </span>
       ),
     },

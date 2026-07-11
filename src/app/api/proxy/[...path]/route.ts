@@ -15,9 +15,11 @@ async function proxyRequest(
   const search = request.nextUrl.search; // preserves ?query=params
   const targetUrl = `${BACKEND_URL}/api/v1/${path}${search}`;
 
-  // Forward the body for methods that have one
+  // Forward the body for methods that have one. Read as raw bytes, not text —
+  // multipart uploads (e.g. bulk roster .xlsx files) contain binary data that
+  // a UTF-8 text decode would corrupt.
   const hasBody = !["GET", "HEAD"].includes(request.method);
-  const body = hasBody ? await request.text() : undefined;
+  const body = hasBody ? await request.arrayBuffer() : undefined;
 
   const response = await fetch(targetUrl, {
     method: request.method,

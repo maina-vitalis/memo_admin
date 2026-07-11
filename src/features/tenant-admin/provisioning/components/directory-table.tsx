@@ -6,6 +6,7 @@ import {
   type PaginationState,
 } from "@tanstack/react-table";
 import type { User } from "@/features/tenant-admin/provisioning/api/get-users";
+import { useDepartments } from "@/features/tenant-admin/provisioning/api/use-departments";
 import { getUsersColumns } from "@/features/tenant-admin/provisioning/components/users-columns";
 import type { DirectoryFilters } from "@/features/tenant-admin/provisioning/schemas/directory-filters.schema";
 import { DataTable } from "@/components/data-table/data-table";
@@ -57,7 +58,21 @@ export function DirectoryTable({
     [users, filters],
   );
 
-  const columns = useMemo(() => getUsersColumns(), []);
+  const { data: departments } = useDepartments();
+
+  const departmentsById = useMemo(
+    () =>
+      (departments ?? []).reduce<Record<string, string>>((acc, department) => {
+        acc[department.id] = department.name;
+        return acc;
+      }, {}),
+    [departments],
+  );
+
+  const columns = useMemo(
+    () => getUsersColumns(departmentsById),
+    [departmentsById],
+  );
 
   const total = filteredUsers.length;
   const totalPages = Math.max(1, Math.ceil(total / filters.pageSize));
