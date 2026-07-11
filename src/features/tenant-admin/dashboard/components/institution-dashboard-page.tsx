@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { DashboardHeader } from "@/features/tenant-admin/dashboard/components/dashboard-header";
 import { DashboardKpiGrid } from "@/features/tenant-admin/dashboard/components/dashboard-kpi-grid";
 import { DashboardSeatUsageCard } from "@/features/tenant-admin/dashboard/components/dashboard-seat-usage-card";
 import { RecentMemosTable } from "@/features/tenant-admin/dashboard/components/recent-memos-table";
+import { MemoDetailSheet } from "@/features/tenant-admin/memos/components/memo-detail-sheet";
 import { useDashboardSummary } from "@/features/tenant-admin/dashboard/api/use-dashboard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -20,6 +22,7 @@ function DashboardKpiSkeleton() {
 
 export function InstitutionDashboardPage() {
   const { data, isLoading, isFetching, isError, error } = useDashboardSummary();
+  const [selectedMemoId, setSelectedMemoId] = useState<string | null>(null);
   const loading = isLoading || isFetching;
 
   if (isError) {
@@ -60,9 +63,17 @@ export function InstitutionDashboardPage() {
           <RecentMemosTable
             data={data?.recentMemos ?? []}
             isLoading={loading}
+            onViewMemo={setSelectedMemoId}
           />
         </div>
       </div>
+
+      <MemoDetailSheet
+        memoId={selectedMemoId}
+        onOpenChange={(open) => {
+          if (!open) setSelectedMemoId(null);
+        }}
+      />
     </div>
   );
 }

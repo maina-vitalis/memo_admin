@@ -1,7 +1,8 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
-import { recentMemosColumns } from "@/features/tenant-admin/dashboard/components/recent-memos-columns";
+import { createRecentMemosColumns } from "@/features/tenant-admin/dashboard/components/recent-memos-columns";
 import type { RecentMemo } from "@/features/tenant-admin/dashboard/types/dashboard";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/data-table/data-table";
@@ -9,9 +10,12 @@ import { DataTable } from "@/components/data-table/data-table";
 type RecentMemosTableProps = {
   data: RecentMemo[];
   isLoading?: boolean;
+  onViewMemo: (id: string) => void;
 };
 
-export function RecentMemosTable({ data, isLoading }: RecentMemosTableProps) {
+export function RecentMemosTable({ data, isLoading, onViewMemo }: RecentMemosTableProps) {
+  const columns = useMemo(() => createRecentMemosColumns(onViewMemo), [onViewMemo]);
+
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
       <div className="flex items-center justify-between border-b px-4 py-3 sm:px-6">
@@ -29,7 +33,7 @@ export function RecentMemosTable({ data, isLoading }: RecentMemosTableProps) {
       </div>
 
       <DataTable
-        columns={recentMemosColumns}
+        columns={columns}
         data={data}
         isLoading={isLoading}
         emptyMessage="No memos have been sent yet."

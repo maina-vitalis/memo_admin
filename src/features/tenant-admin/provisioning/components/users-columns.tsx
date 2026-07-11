@@ -4,7 +4,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { formatDistanceToNow } from "date-fns";
 import type { User } from "@/features/tenant-admin/provisioning/api/get-users";
 import { UserRoleSelect } from "@/features/tenant-admin/provisioning/components/user-role-select";
-import { EditUserDialog } from "@/features/tenant-admin/roles/components/edit-user-dialog";
+import { UserRowActions } from "@/features/tenant-admin/roles/components/user-row-actions";
 import type { UserInRole } from "@/features/tenant-admin/roles/api/get-users";
 
 type DepartmentLookup = Record<string, string>;
@@ -120,7 +120,7 @@ export function getUsersColumns(
       header: "Actions",
       cell: ({ row }) => (
         <div className="flex items-center justify-end">
-          <EditUserDialog user={toUserInRole(row.original)} />
+          <UserRowActions user={toUserInRole(row.original)} />
         </div>
       ),
     },

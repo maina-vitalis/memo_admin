@@ -1,14 +1,15 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import type { RecentMemo } from "@/features/tenant-admin/dashboard/types/dashboard";
-import { memoStatusStyles } from "@/features/tenant-admin/memos/lib/memo-style";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { memoStatusStyles } from "@/features/tenant-admin/memos/lib/memo-style";
+import { MemoRowActions } from "@/features/tenant-admin/memos/components/memo-row-actions";
+import type { MemoLedgerRow } from "@/features/tenant-admin/memos/types/memo";
 
-export function createRecentMemosColumns(
+export function createMemoLedgerColumns(
   onView: (id: string) => void,
-): ColumnDef<RecentMemo>[] {
+): ColumnDef<MemoLedgerRow>[] {
   return [
     {
       accessorKey: "title",
@@ -16,10 +17,19 @@ export function createRecentMemosColumns(
       cell: ({ row }) => (
         <div className="whitespace-normal">
           <p className="font-medium text-foreground">{row.original.title}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {row.original.department}
+          <p className="mt-0.5 text-xs text-muted-foreground capitalize">
+            {row.original.category}
           </p>
         </div>
+      ),
+    },
+    {
+      accessorKey: "department",
+      header: "Department",
+      cell: ({ row }) => (
+        <span className="text-sm text-foreground">
+          {row.original.department}
+        </span>
       ),
     },
     {
@@ -27,6 +37,15 @@ export function createRecentMemosColumns(
       header: "Sent",
       cell: ({ row }) => (
         <span className="text-sm text-foreground">{row.original.sentAt}</span>
+      ),
+    },
+    {
+      accessorKey: "recipients",
+      header: "Recipients",
+      cell: ({ row }) => (
+        <span className="text-sm text-foreground">
+          {row.original.recipients}
+        </span>
       ),
     },
     {
@@ -61,15 +80,22 @@ export function createRecentMemosColumns(
     },
     {
       id: "actions",
-      header: () => <span className="sr-only">Actions</span>,
+      header: "Actions",
       cell: ({ row }) => (
-        <button
-          type="button"
-          onClick={() => onView(row.original.id)}
-          className="text-sm font-medium text-primary hover:underline"
-        >
-          View
-        </button>
+        <div className="flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => onView(row.original.id)}
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            View
+          </button>
+          <MemoRowActions
+            memoId={row.original.id}
+            memoTitle={row.original.title}
+            isArchived={row.original.status === "archived"}
+          />
+        </div>
       ),
     },
   ];

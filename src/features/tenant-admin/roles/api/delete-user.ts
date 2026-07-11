@@ -1,8 +1,7 @@
 import { tenantApi } from "../../shared/api/client";
-import type { UserInRole } from "./get-users";
 
-export async function deleteUser(userId: string): Promise<UserInRole> {
-  return tenantApi<UserInRole>(`/users/${userId}`, {
+export async function deleteUser(userId: string): Promise<{ id: string }> {
+  return tenantApi<{ id: string }>(`/users/${userId}`, {
     method: "DELETE",
   });
 }

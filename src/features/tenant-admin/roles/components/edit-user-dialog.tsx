@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -19,7 +18,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { PencilIcon } from "lucide-react";
 
 const updateUserSchema = z.object({
   firstName: z.string().trim().min(2, "First name must be at least 2 characters"),
@@ -40,16 +37,18 @@ const updateUserSchema = z.object({
   role: z.string().min(1, "Select a role"),
   departmentId: z.string().optional(),
   phoneNumber: z.string().trim().optional(),
+  status: z.enum(["active", "inactive"]),
 });
 
 type UpdateUserFormValues = z.infer<typeof updateUserSchema>;
 
 interface EditUserDialogProps {
   user: UserInRole;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function EditUserDialog({ user }: EditUserDialogProps) {
-  const [open, setOpen] = useState(false);
+export function EditUserDialog({ user, open, onOpenChange }: EditUserDialogProps) {
   const updateUserMutation = useUpdateUser();
   const { data: departments } = useDepartments();
 
@@ -66,6 +65,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
       role: user.role,
       departmentId: user.departmentId || "",
       phoneNumber: user.phoneNumber || "",
+      status: user.isActive ? "active" : "inactive",
     },
   });
 
@@ -79,11 +79,12 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
           role: values.role,
           departmentId: values.departmentId || undefined,
           phoneNumber: values.phoneNumber || undefined,
+          isActive: values.status === "active",
         },
       });
 
       toast.success(`User "${values.firstName} ${values.lastName}" updated successfully`);
-      setOpen(false);
+      onOpenChange(false);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to update user";
@@ -92,12 +93,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <PencilIcon className="h-4 w-4" />
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit User</DialogTitle>
@@ -187,6 +183,25 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Controller
+              name="status"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger id="status" className="w-full">
+                    <SelectValue placeholder="Select a status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="phoneNumber">Phone Number</Label>
             <Input
               id="phoneNumber"
@@ -200,7 +215,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => onOpenChange(false)}
               disabled={updateUserMutation.isPending}
             >
               Cancel

@@ -7,6 +7,7 @@ export interface UpdateUserPayload {
   firstName?: string;
   lastName?: string;
   phoneNumber?: string;
+  isActive?: boolean;
 }
 
 export async function updateUser(

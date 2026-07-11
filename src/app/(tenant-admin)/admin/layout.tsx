@@ -13,7 +13,8 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { logout } from "@/features/auth/store/auth-slice";
-import { useAppDispatch } from "@/store/hooks";
+import { selectInstitution } from "@/features/auth/store/auth-selectors";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { TenantAdminAuthGuard } from "@/features/auth/components/tenant-admin-auth-guard";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -64,6 +65,7 @@ export default function TenantAdminLayout({
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const institution = useAppSelector(selectInstitution);
 
   function handleSignOut() {
     dispatch(logout());
@@ -175,7 +177,7 @@ export default function TenantAdminLayout({
                   className="size-6"
                 />
                 <h2 className="text-lg font-semibold text-primary">
-                  {PLATFORM_NAME}
+                  {institution?.name ?? PLATFORM_NAME}
                 </h2>
               </div>
 

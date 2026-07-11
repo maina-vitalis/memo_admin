@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { toast } from "sonner";
 import { useDeleteUser } from "@/features/tenant-admin/roles/api/use-delete-user";
 import type { UserInRole } from "@/features/tenant-admin/roles/api/get-users";
@@ -13,48 +12,42 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { Trash2Icon } from "lucide-react";
 
 interface DeleteUserDialogProps {
   user: UserInRole;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function DeleteUserDialog({ user }: DeleteUserDialogProps) {
-  const [open, setOpen] = useState(false);
+export function DeleteUserDialog({ user, open, onOpenChange }: DeleteUserDialogProps) {
   const deleteUserMutation = useDeleteUser();
 
   async function handleDelete() {
     try {
       await deleteUserMutation.mutateAsync(user.id);
-      toast.success(`User "${user.firstName} ${user.lastName}" has been deactivated`);
-      setOpen(false);
+      toast.success(`"${user.firstName} ${user.lastName}" has been deleted`);
+      onOpenChange(false);
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to deactivate user";
+        error instanceof Error ? error.message : "Failed to delete user";
       toast.error(message);
     }
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <Trash2Icon className="h-4 w-4 text-destructive" />
-        </Button>
-      </AlertDialogTrigger>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            Deactivate {user.firstName} {user.lastName}?
+            Delete {user.firstName} {user.lastName}?
           </AlertDialogTitle>
           <AlertDialogDescription>
-            This will deactivate the user account. The user will no longer be
-            able to log in. This action can be reversed by reactivating the
-            account later.
+            This permanently deletes the user account along with every memo
+            they sent (and all of those memos&apos; recipient read receipts,
+            notifications, and attachments institution-wide), plus their own
+            sessions and login tokens. This cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -72,10 +65,10 @@ export function DeleteUserDialog({ user }: DeleteUserDialogProps) {
             {deleteUserMutation.isPending ? (
               <>
                 <Spinner />
-                Deactivating...
+                Deleting...
               </>
             ) : (
-              "Deactivate User"
+              "Delete permanently"
             )}
           </AlertDialogAction>
         </AlertDialogFooter>
