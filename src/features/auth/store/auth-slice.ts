@@ -120,6 +120,15 @@ const authSlice = createSlice({
       state.error = null;
       saveAuthToStorage(state);
     },
+
+    /** Patch profile fields after a self-service profile update (e.g. Settings page). */
+    updateProfileFields(
+      state,
+      action: PayloadAction<Partial<Pick<AuthState, 'firstName' | 'lastName'>>>,
+    ) {
+      Object.assign(state, action.payload);
+      saveAuthToStorage(state);
+    },
   },
   extraReducers(builder) {
     builder
@@ -140,6 +149,7 @@ const authSlice = createSlice({
   },
 });
 
-export const { hydrateAuth, logout, clearAuthError, applyAuthSession } = authSlice.actions;
+export const { hydrateAuth, logout, clearAuthError, applyAuthSession, updateProfileFields } =
+  authSlice.actions;
 
 export const authReducer = authSlice.reducer;
