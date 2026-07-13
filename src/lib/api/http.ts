@@ -74,12 +74,17 @@ export async function apiRequest<T>(
   } = {},
 ): Promise<T> {
   const { method = "GET", body } = options;
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
 
   try {
     const { data } = await apiClient.request<unknown>({
       url: path,
       method,
       data: body,
+      // The shared instance defaults to Content-Type: application/json, which
+      // would make axios try to JSON-serialize FormData instead of sending it
+      // as multipart. Clearing it lets the browser set the correct boundary.
+      headers: isFormData ? { "Content-Type": undefined } : undefined,
     });
 
     return unwrapResponse<T>(data);

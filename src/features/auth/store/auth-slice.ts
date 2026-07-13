@@ -129,6 +129,17 @@ const authSlice = createSlice({
       Object.assign(state, action.payload);
       saveAuthToStorage(state);
     },
+
+    /** Patch the institution summary after an institution profile update (tenant-admin Settings). */
+    updateInstitutionSummary(
+      state,
+      action: PayloadAction<Partial<InstitutionSummary>>,
+    ) {
+      if (state.institution) {
+        Object.assign(state.institution, action.payload);
+        saveAuthToStorage(state);
+      }
+    },
   },
   extraReducers(builder) {
     builder
@@ -149,7 +160,13 @@ const authSlice = createSlice({
   },
 });
 
-export const { hydrateAuth, logout, clearAuthError, applyAuthSession, updateProfileFields } =
-  authSlice.actions;
+export const {
+  hydrateAuth,
+  logout,
+  clearAuthError,
+  applyAuthSession,
+  updateProfileFields,
+  updateInstitutionSummary,
+} = authSlice.actions;
 
 export const authReducer = authSlice.reducer;

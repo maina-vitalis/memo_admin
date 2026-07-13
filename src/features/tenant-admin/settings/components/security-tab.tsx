@@ -1,53 +1,42 @@
-/**
- * [SIGN OUT ALL + ACTIVE SESSIONS] Security / Devices page
- *
- * Lightweight implementation for showing where the user is logged in.
- * - Lists active sessions
- * - "Sign out from all devices" (big red action)
- * - Per-device sign out
- *
- * Senior engineer notes:
- * - Uses React Query for data + mutations
- * - After "sign out all" we also dispatch global logout + redirect
- * - This page can be expanded later into full security settings (2FA, etc.)
- */
-
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useAppDispatch } from "@/store/hooks";
-import { logout } from "@/features/auth/store/auth-slice";
-import { useActiveSessions, useLogoutAllDevices } from "@/features/tenant-admin/security/api/use-sessions";
-import { ActiveSessionsList } from "@/features/tenant-admin/security/components/active-sessions-list";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
 import { LogOutIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { logout } from "@/features/auth/store/auth-slice";
+import {
+  ActiveSessionsList,
+  useActiveSessions,
+  useLogoutAllDevices,
+} from "@/features/tenant-admin/security";
+import { ChangePasswordForm } from "@/features/tenant-admin/settings/components/change-password-form";
+import { useAppDispatch } from "@/store/hooks";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 
-export default function SecurityPage() {
+export function SecurityTab() {
   const dispatch = useAppDispatch();
   const router = useRouter();
-
   const { data: sessions = [], isLoading, refetch } = useActiveSessions();
   const logoutAll = useLogoutAllDevices();
 
-  const handleLogoutAll = async () => {
+  async function handleLogoutAll() {
     await logoutAll.mutateAsync();
-    // After server revokes everything, clear local state and force re-login
     dispatch(logout());
     router.push("/login");
-  };
+  }
 
   return (
-    <div className="max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Security</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage where you&apos;re signed in and sign out from other devices.
-        </p>
-      </div>
+    <div className="max-w-2xl space-y-6">
+      <ChangePasswordForm />
 
-      <Card>
+      <Card className="shadow-sm">
         <CardHeader>
           <CardTitle>Active sessions</CardTitle>
           <CardDescription>
@@ -65,11 +54,12 @@ export default function SecurityPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-destructive/50">
+      <Card className="border-destructive/50 shadow-sm">
         <CardHeader>
           <CardTitle className="text-destructive">Sign out everywhere</CardTitle>
           <CardDescription>
-            This will immediately end your session on all devices, including this one.
+            This will immediately end your session on all devices, including this
+            one.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -89,9 +79,6 @@ export default function SecurityPage() {
               </>
             )}
           </Button>
-          <p className="mt-2 text-xs text-muted-foreground">
-            You will need to sign in again on every device.
-          </p>
         </CardContent>
       </Card>
     </div>

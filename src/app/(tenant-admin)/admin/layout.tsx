@@ -6,7 +6,7 @@ import {
   LayoutDashboardIcon,
   LogOutIcon,
   MailIcon,
-  SmartphoneIcon, // for devices/sessions
+  SettingsIcon,
   UserCircleIcon,
   UsersIcon,
 } from "lucide-react";
@@ -44,7 +44,7 @@ const navItems = [
   { label: "Directory", href: "/admin/directory", icon: UsersIcon },
   { label: "Departments", href: "/admin/departments", icon: Building2Icon },
   { label: "Memos", href: "/admin/memos", icon: MailIcon },
-  { label: "Security", href: "/admin/security", icon: SmartphoneIcon }, // [ACTIVE SESSIONS + SIGN OUT ALL]
+  { label: "Settings", href: "/admin/settings", icon: SettingsIcon },
 ] as const;
 
 const authItems = [{ label: "Sign out", icon: LogOutIcon }] as const;
@@ -190,13 +190,12 @@ export default function TenantAdminLayout({
                 >
                   <BellIcon />
                 </Button>
-                {/* [SECURITY] Quick access to devices/sessions management */}
                 <Button
                   variant="ghost"
                   size="icon-sm"
                   className="text-muted-foreground hover:text-primary"
-                  aria-label="Account & Security"
-                  onClick={() => router.push("/admin/security")}
+                  aria-label="Account & Settings"
+                  onClick={() => router.push("/admin/settings")}
                 >
                   <UserCircleIcon />
                 </Button>
