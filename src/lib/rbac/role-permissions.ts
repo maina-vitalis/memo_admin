@@ -7,29 +7,22 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   [Role.CHAIRPERSON]: [
     Permission.VIEW_BOARD_REPORTS,
     Permission.VIEW_AUDIT_LOGS,
-    Permission.ACKNOWLEDGE_MEMO,
   ],
-  [Role.BOARD_MEMBER]: [
-    Permission.VIEW_BOARD_REPORTS,
-    Permission.ACKNOWLEDGE_MEMO,
-  ],
+  [Role.BOARD_MEMBER]: [Permission.VIEW_BOARD_REPORTS],
   [Role.PRINCIPAL]: [
     Permission.MANAGE_TENANT_USERS,
     Permission.MANAGE_ROLES,
     Permission.BROADCAST_MEMO,
     Permission.APPROVE_MEMO,
     Permission.VIEW_AUDIT_LOGS,
-    Permission.ACKNOWLEDGE_MEMO,
   ],
   [Role.DEPUTY_PRINCIPAL_ACADEMICS]: [
     Permission.BROADCAST_MEMO,
     Permission.APPROVE_MEMO,
-    Permission.ACKNOWLEDGE_MEMO,
   ],
   [Role.DEPUTY_PRINCIPAL_ADMIN]: [
     Permission.MANAGE_TENANT_USERS,
     Permission.BROADCAST_MEMO,
-    Permission.ACKNOWLEDGE_MEMO,
   ],
   [Role.INSTITUTION_ADMIN]: [
     Permission.MANAGE_TENANT_USERS,
@@ -37,7 +30,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     Permission.MANAGE_ROLES,
     Permission.VIEW_AUDIT_LOGS,
   ],
-  [Role.HOD]: [Permission.BROADCAST_MEMO, Permission.ACKNOWLEDGE_MEMO],
-  [Role.TRAINER]: [Permission.ACKNOWLEDGE_MEMO],
-  [Role.TRAINEE]: [Permission.ACKNOWLEDGE_MEMO],
+  [Role.HOD]: [Permission.BROADCAST_MEMO],
+  [Role.TRAINER]: [],
+  [Role.TRAINEE]: [],
 };

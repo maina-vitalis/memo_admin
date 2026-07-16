@@ -4,12 +4,10 @@ export type MemoDetail = {
   body: string;
   priority: "low" | "normal" | "high" | "urgent";
   category: "general" | "academic" | "administrative" | "emergency" | "event";
-  status: "published" | "draft" | "scheduled" | "archived";
+  status: "published" | "draft" | "archived";
   targetType: "broadcast" | "department" | "role" | "individual";
   department: string;
   senderName: string;
-  requiresAck: boolean;
-  ackDeadlineAt: string | null;
   sentAt: string;
   expiresAt: string | null;
   recipients: {

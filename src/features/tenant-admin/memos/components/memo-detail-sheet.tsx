@@ -99,16 +99,6 @@ export function MemoDetailSheet({ memoId, onOpenChange }: MemoDetailSheetProps) 
                     {data.sentAt}
                   </dd>
                 </div>
-                <div>
-                  <dt className="text-muted-foreground">Requires ack.</dt>
-                  <dd className="mt-0.5 font-medium text-foreground">
-                    {data.requiresAck
-                      ? data.ackDeadlineAt
-                        ? `Yes, by ${data.ackDeadlineAt}`
-                        : "Yes"
-                      : "No"}
-                  </dd>
-                </div>
               </dl>
 
               <div>

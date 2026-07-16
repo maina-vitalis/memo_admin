@@ -16,7 +16,7 @@ export type RecentMemo = {
   department: string;
   sentAt: string;
   readRate: number;
-  status: "published" | "draft" | "scheduled" | "archived";
+  status: "published" | "draft" | "archived";
 };
 
 export type DashboardSummary = {

@@ -12,10 +12,6 @@ export const memoStatusStyles: Record<
     label: "Draft",
     className: "border-border bg-muted text-muted-foreground",
   },
-  scheduled: {
-    label: "Scheduled",
-    className: "border-blue-200 bg-blue-100 text-blue-800",
-  },
   archived: {
     label: "Archived",
     className: "border-amber-200 bg-amber-100 text-amber-800",
