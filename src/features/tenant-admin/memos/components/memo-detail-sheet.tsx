@@ -10,6 +10,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemoDetail } from "@/features/tenant-admin/memos/api/use-memo-detail";
+import { MemoAttachmentsList } from "@/features/tenant-admin/memos/components/memo-attachments-list";
+import { MemoBodyContent } from "@/features/tenant-admin/memos/components/memo-body-content";
+import { MemoDeliveryPanel } from "@/features/tenant-admin/memos/components/memo-delivery-panel";
 import {
   memoPriorityStyles,
   memoStatusStyles,
@@ -117,14 +120,23 @@ export function MemoDetailSheet({ memoId, onOpenChange }: MemoDetailSheetProps) 
                 </p>
               </div>
 
+              <MemoDeliveryPanel
+                memoId={data.id}
+                status={data.status}
+                delivery={data.delivery}
+              />
+
               <div>
                 <h4 className="text-sm font-medium text-foreground">
                   Message
                 </h4>
-                <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">
-                  {data.body}
-                </p>
+                <MemoBodyContent
+                  body={data.body}
+                  bodyFormat={data.bodyFormat}
+                />
               </div>
+
+              <MemoAttachmentsList attachments={data.attachments ?? []} />
             </>
           )}
         </div>
