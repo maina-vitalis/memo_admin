@@ -1,5 +1,6 @@
 "use client";
 
+import { PageHeader } from "@/components/page-header";
 import { PlatformSettingsForm } from "@/features/super-admin/settings/components/platform-settings-form";
 import { ProfileForm } from "@/features/super-admin/settings/components/profile-form";
 import { SecurityTab } from "@/features/super-admin/settings/components/security-tab";
@@ -8,12 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export function SettingsPage() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Manage your admin account and platform defaults.
-        </p>
-      </div>
+      <PageHeader
+        title="Settings"
+        description="Manage your admin account and platform defaults."
+      />
 
       <Tabs defaultValue="profile">
         <TabsList>

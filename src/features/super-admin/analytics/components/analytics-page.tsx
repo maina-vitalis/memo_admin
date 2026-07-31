@@ -1,5 +1,6 @@
 "use client";
 
+import { PageHeader } from "@/components/page-header";
 import { useAnalyticsSummary } from "@/features/super-admin/analytics/api/use-analytics";
 import { AnalyticsKpiGrid } from "@/features/super-admin/analytics/components/analytics-kpi-grid";
 import { StatusBreakdownChart } from "@/features/super-admin/analytics/components/status-breakdown-chart";
@@ -35,12 +36,10 @@ export function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-foreground">Analytics</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Platform-wide trends across every institution on TVET MEMO.
-        </p>
-      </div>
+      <PageHeader
+        title="Analytics"
+        description="Platform-wide trends across every institution on TVET MEMO."
+      />
 
       {isError ? (
         <Alert variant="destructive">

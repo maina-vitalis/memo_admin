@@ -1,5 +1,6 @@
 "use client";
 
+import { PageHeader } from "@/components/page-header";
 import { useCallback, useState } from "react";
 import { useTenants } from "@/features/super-admin/dashboard/api/use-tenants";
 import { TenantDirectoryTable } from "@/features/super-admin/dashboard/components/tenant-directory-table";
@@ -32,12 +33,14 @@ export function TenantDirectoryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="mb-2">
-        <h1 className="text-2xl font-semibold text-foreground">Tenant Directory</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {isLoading ? "Loading institutions..." : `${total} institutions registered`}
-        </p>
-      </div>
+      <PageHeader
+        title="Tenant Directory"
+        description={
+          isLoading
+            ? "Loading institutions..."
+            : `${total} institutions registered`
+        }
+      />
 
       {isError ? (
         <Alert variant="destructive">

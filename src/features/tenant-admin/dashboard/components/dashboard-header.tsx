@@ -1,5 +1,4 @@
-import { Skeleton } from "@/components/ui/skeleton";
-
+import { PageHeader } from "@/components/page-header";
 type DashboardHeaderProps = {
   institutionName?: string;
   shortcode?: string;
@@ -11,23 +10,21 @@ export function DashboardHeader({
   shortcode,
   isLoading,
 }: DashboardHeaderProps) {
+  if (isLoading) {
+    return (
+      <PageHeader
+        title=""
+        isLoading
+      />
+    );
+  }
+
   return (
-    <div>
-      {isLoading ? (
-        <>
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="mt-2 h-4 w-40" />
-        </>
-      ) : (
-        <>
-          <h1 className="text-2xl font-semibold text-foreground">
-            {institutionName ?? "Institution dashboard"}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {shortcode ? `${shortcode} · Overview` : "Overview of your institution"}
-          </p>
-        </>
-      )}
-    </div>
+    <PageHeader
+      title={institutionName ?? "Institution dashboard"}
+      description={
+        shortcode ? `${shortcode} · Overview` : "Overview of your institution"
+      }
+    />
   );
 }

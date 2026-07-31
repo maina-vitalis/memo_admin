@@ -1,5 +1,6 @@
 "use client";
 
+import { PageHeader } from "@/components/page-header";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useInstitutionsReport } from "@/features/super-admin/reports/api/use-institutions-report";
@@ -47,14 +48,14 @@ export function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-foreground">Reports</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {loading
+      <PageHeader
+        title="Reports"
+        description={
+          loading
             ? "Loading institutions..."
-            : `${filtered.length} of ${data?.length ?? 0} institutions`}
-        </p>
-      </div>
+            : `${filtered.length} of ${data?.length ?? 0} institutions`
+        }
+      />
 
       {isError ? (
         <Alert variant="destructive">

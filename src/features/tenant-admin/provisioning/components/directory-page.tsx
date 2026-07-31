@@ -1,5 +1,6 @@
 "use client";
 
+import { PageHeader } from "@/components/page-header";
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import { PlusIcon, UploadIcon } from "lucide-react";
@@ -42,34 +43,32 @@ export function DirectoryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">
-            Staff & Student Directory
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {isLoading
-              ? "Loading users..."
-              : `${totalUsers} user${totalUsers === 1 ? "" : "s"} in your institution`}
-          </p>
-        </div>
-        <div className="flex shrink-0 gap-3">
-          {canBulkUpload ? (
-            <Button asChild variant="outline">
-              <Link href="/admin/directory/bulk-upload">
-                <UploadIcon className="mr-2 h-4 w-4" />
-                Bulk upload
+      <PageHeader
+        title="Staff & Student Directory"
+        description={
+          isLoading
+            ? "Loading users..."
+            : `${totalUsers} user${totalUsers === 1 ? "" : "s"} in your institution`
+        }
+        action={
+          <div className="flex shrink-0 gap-3">
+            {canBulkUpload ? (
+              <Button asChild variant="outline">
+                <Link href="/admin/directory/bulk-upload">
+                  <UploadIcon className="mr-2 h-4 w-4" />
+                  Bulk upload
+                </Link>
+              </Button>
+            ) : null}
+            <Button asChild>
+              <Link href="/admin/directory/provision-user">
+                <PlusIcon className="mr-2 h-4 w-4" />
+                Provision user
               </Link>
             </Button>
-          ) : null}
-          <Button asChild>
-            <Link href="/admin/directory/provision-user">
-              <PlusIcon className="mr-2 h-4 w-4" />
-              Provision user
-            </Link>
-          </Button>
-        </div>
-      </div>
+          </div>
+        }
+      />
 
       {isError ? (
         <Alert variant="destructive">

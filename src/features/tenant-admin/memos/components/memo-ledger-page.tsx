@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useMemoLedger } from "@/features/tenant-admin/memos/api/use-memo-ledger";
 import { MemoLedgerTable } from "@/features/tenant-admin/memos/components/memo-ledger-table";
 import { MemoDetailSheet } from "@/features/tenant-admin/memos/components/memo-detail-sheet";
+import { PageHeader } from "@/components/page-header";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 const PAGE_SIZE = 10;
@@ -22,12 +23,10 @@ export function MemoLedgerPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-foreground">Memo Ledger</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Central memo ledger and traceability across your institution.
-        </p>
-      </div>
+      <PageHeader
+        title="Memo Ledger"
+        description="Central memo ledger and traceability across your institution."
+      />
 
       {isError ? (
         <Alert variant="destructive">

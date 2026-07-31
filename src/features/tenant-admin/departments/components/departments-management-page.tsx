@@ -1,5 +1,6 @@
 "use client";
 
+import { PageHeader } from "@/components/page-header";
 import { useDepartments } from "@/features/tenant-admin/departments/api/use-departments";
 import { useInstitutionUsers } from "@/features/tenant-admin/roles/api/use-users";
 import { CreateDepartmentDialog } from "@/features/tenant-admin/departments/components/create-department-dialog";
@@ -15,18 +16,11 @@ export function DepartmentsManagementPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">
-            Departments
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Manage academic units in your institution.
-          </p>
-        </div>
-
-        <CreateDepartmentDialog />
-      </div>
+      <PageHeader
+        title="Departments"
+        description="Manage academic units in your institution."
+        action={<CreateDepartmentDialog />}
+      />
 
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
