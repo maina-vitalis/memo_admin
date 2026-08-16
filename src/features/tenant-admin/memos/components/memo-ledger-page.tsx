@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useMemoLedger } from "@/features/tenant-admin/memos/api/use-memo-ledger";
 import { MemoLedgerTable } from "@/features/tenant-admin/memos/components/memo-ledger-table";
 import { MemoDetailSheet } from "@/features/tenant-admin/memos/components/memo-detail-sheet";
+import { DeleteAllMemosDialog } from "@/features/tenant-admin/memos/components/delete-all-memos-dialog";
 import { PageHeader } from "@/components/page-header";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
@@ -26,6 +27,9 @@ export function MemoLedgerPage() {
       <PageHeader
         title="Memo Ledger"
         description="Central memo ledger and traceability across your institution."
+        action={
+          <DeleteAllMemosDialog totalMemos={data?.total ?? 0} />
+        }
       />
 
       {isError ? (
